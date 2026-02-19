@@ -1,30 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Dashboard from '../components/Dashboard.vue'
+import Mergenator from '../components/Mergenator.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'home',
     redirect: '/dashboard'
   },
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('../components/Dashboard.vue')
+    component: Dashboard,
+    // Перенаправляем на dashboard с табом по умолчанию
+    beforeEnter: (to, from, next) => {
+      next({ name: 'dashboard-with-tab', params: { tab: 'welcome' } })
+    }
+  },
+  {
+    path: '/dashboard/:tab',
+    name: 'dashboard-with-tab',
+    component: Dashboard,
+    props: true
   },
   {
     path: '/mergenator',
     name: 'mergenator',
-    component: () => import('../components/Mergenator.vue')
+    component: Mergenator,
+    beforeEnter: (to, from, next) => {
+      next({ name: 'mergenator-with-tab', params: { tab: 'merge' } })
+    }
   },
   {
-    path: '/welcome',
-    name: 'welcome',
-    component: () => import('../components/Welcome.vue')
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    redirect: '/welcome'
+    path: '/mergenator/:tab',
+    name: 'mergenator-with-tab',
+    component: Mergenator,
+    props: true
   }
 ]
 
@@ -32,7 +42,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    // Прокрутка к сохраненной позиции или вверх страницы
     if (savedPosition) {
       return savedPosition
     } else {

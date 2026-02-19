@@ -7,8 +7,8 @@
           v-for="item in menuItems"
           :key="item.key"
           class="menu-item"
-          :class="{ active: $route.name === item.key }"
-          :data-icon="item.key"
+          :class="{ active: isActiveMenuItem(item) }"
+          :data-key="item.key"
           @click="navigateTo(item)"
         >
           {{ item.label }}
@@ -20,19 +20,6 @@
     </div>
 
     <div class="content-panel">
-      <!-- имитация вкладок редактора с роутингом -->
-      <div class="fake-tabs">
-        <div
-          v-for="tab in editorTabs"
-          :key="tab.name"
-          class="fake-tab"
-          :class="{ 'active-tab': $route.name === tab.routeName }"
-          @click="navigateToTab(tab)"
-        >
-          {{ tab.name }}
-        </div>
-      </div>
-
       <!-- Здесь будет отображаться текущий компонент страницы -->
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -53,43 +40,37 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 
 const menuItems = [
-  { key: 'dashboard', label: 'Dashboard', routeName: 'dashboard', path: '/dashboard' },
-  { key: 'mergenator', label: 'Mergenator', routeName: 'mergenator', path: '/mergenator' }
+  { key: 'dashboard', label: 'Dashboard', basePath: '/dashboard' },
+  { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator' }
 ]
 
-const editorTabs = ref([
-  { name: 'Welcome.php', routeName: 'welcome', path: '/welcome', active: true },
-  { name: 'project.xml', routeName: 'project', path: '/project', active: false }
-])
-
-// Следим за изменением маршрута и обновляем активные вкладки
-watch(() => route.name, (newRouteName) => {
-  editorTabs.value = editorTabs.value.map(tab => ({
-    ...tab,
-    active: tab.routeName === newRouteName
-  }))
-}, { immediate: true })
+// Функция для проверки активности пункта меню
+const isActiveMenuItem = (item) => {
+  // Проверяем, начинается ли текущий путь с basePath пункта меню
+  return route.path.startsWith(item.basePath)
+}
 
 // Навигация по меню
 const navigateTo = (item) => {
-  router.push({ name: item.routeName })
-}
-
-// Навигация по вкладкам
-const navigateToTab = (tab) => {
-  router.push({ name: tab.routeName })
+  // Если текущий путь уже начинается с basePath, не делаем редирект
+  if (route.path.startsWith(item.basePath)) {
+    return
+  }
+  
+  // Переходим на базовый путь, откуда будет редирект на дефолтный таб
+  router.push(item.basePath)
 }
 </script>
 
 <style>
-/* Все существующие стили остаются */
+/* Все существующие стили остаются из main.css */
 
 /* Добавим анимацию для перехода между страницами */
 .fade-enter-active,
@@ -106,16 +87,5 @@ const navigateToTab = (tab) => {
 .route-info {
   color: #6897bb;
   font-family: monospace;
-}
-
-/* Обновим стили для табов, добавим курсор-поинтер */
-.fake-tab {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.fake-tab:hover:not(.active-tab) {
-  background-color: #404448;
-  color: #ffffff;
 }
 </style>
