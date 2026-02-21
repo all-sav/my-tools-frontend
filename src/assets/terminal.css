@@ -142,6 +142,19 @@
   opacity: 0.6;
 }
 
+.terminal-link,
+.terminal-line a {
+  color: #589df6;
+  text-decoration: none;
+  border-bottom: 1px dashed #589df6;
+  transition: all 0.2s ease;
+}
+
+.terminal-line a:hover {
+  color: #74b9ff;
+  border-bottom-style: solid;
+}
+
 @media (max-width: 768px) {
   .terminal-content {
     max-height: 200px;

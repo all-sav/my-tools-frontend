@@ -125,7 +125,7 @@
   border-color: #c72c2c;
 }
 
-/* Всплывающая ошибка */
+/* Стили для всплывающей ошибки */
 .error-popup {
   position: absolute;
   top: calc(100% + 8px);
@@ -143,6 +143,15 @@
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   animation: slideDown 0.2s ease;
+}
+
+.error-popup a {
+  color: #f28b82;
+  text-decoration: underline;
+}
+
+.error-popup a:hover {
+  color: #ff9e9e;
 }
 
 .error-icon {

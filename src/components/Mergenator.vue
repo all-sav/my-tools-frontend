@@ -74,7 +74,7 @@
       <transition name="slide-fade">
         <div v-if="errorMessage" class="error-popup">
           <span class="error-icon">⚠️</span>
-          {{ errorMessage }}
+          <span v-html="errorMessage"></span>
         </div>
       </transition>
     </div>
@@ -93,8 +93,9 @@
       <div class="terminal-content" ref="terminalContent">
         <div v-for="(line, index) in terminalLines" :key="index" class="terminal-line" :class="line.type">
           <span class="terminal-prompt">{{ line.prompt }}</span>
-          <span class="terminal-text">{{ line.text }}</span>
-          <span v-if="line.details" class="terminal-details">{{ line.details }}</span>
+          <!-- Используем v-html вместо простого вывода текста -->
+          <span class="terminal-text" v-html="line.text"></span>
+          <span v-if="line.details" class="terminal-details" v-html="line.details"></span>
         </div>
         <div v-if="!terminalLines.length" class="terminal-line terminal-empty">
           <span class="terminal-prompt">$</span>
@@ -108,6 +109,7 @@
 <script setup>
 import { ref, watch, onMounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { mergenatorApi } from '@/services/api'
 
 import '@/assets/mergenator.css'
 import '@/assets/terminal.css'
@@ -149,12 +151,24 @@ const isBranchNameValid = computed(() => {
   return branchName.value && branchName.value.length >= 3
 })
 
+// Функция для форматирования ссылок в тексте
+const formatLinks = (text) => {
+  if (!text) return text
+  
+  // Простая замена URL на кликабельные ссылки
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  return text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" class="terminal-link">${url}</a>`
+  })
+}
+
 // Добавление строки в терминал
 const addTerminalLine = (text, type = 'info', details = null) => {
   const prompt = type === 'error' ? '✗' : type === 'success' ? '✓' : '$'
   
+  // НЕ делаем replace тегов, оставляем HTML как есть
   terminalLines.value.push({
-    text,
+    text: text, // убираем formatLinks, оставляем как есть
     type,
     prompt,
     details,
@@ -180,6 +194,67 @@ const clearError = () => {
   errorMessage.value = ''
 }
 
+// Обработка ответа от API
+const handleApiResponse = (response) => {
+  console.log('API Response:', response.data)
+  
+  if (response.data && typeof response.data === 'object') {
+    if (response.data.success === true) {
+      addTerminalLine(response.data.message || 'Операция выполнена успешно', 'success')
+      branchName.value = ''
+      return true
+    } else {
+      let errorMsg = 'Неизвестная ошибка'
+      
+      if (response.data.data?.message) {
+        // Сообщение уже содержит HTML, передаем как есть
+        errorMsg = response.data.data.message
+      } else if (response.data.message) {
+        errorMsg = response.data.message
+      }
+      
+      // Для всплывающей ошибки удаляем HTML, но в терминал передаем с HTML
+      errorMessage.value = errorMsg.replace(/<[^>]*>/g, '')
+      addTerminalLine(`Error: ${errorMsg}`, 'error') // errorMsg содержит HTML
+      return false
+    }
+  } else {
+    errorMessage.value = 'Неверный формат ответа от сервера'
+    addTerminalLine('Invalid server response format', 'error')
+    return false
+  }
+}
+
+// Обработка ошибок
+const handleApiError = (error) => {
+  console.error('API Error:', error)
+  
+  let errorMsg = 'Ошибка соединения'
+  
+  if (error.response) {
+    // Сервер вернул ошибку
+    if (error.response.data?.data?.message) {
+      errorMsg = error.response.data.data.message
+    } else if (error.response.data?.message) {
+      errorMsg = error.response.data.message
+    } else {
+      errorMsg = `Ошибка ${error.response.status}`
+    }
+  } else if (error.request) {
+    // Нет ответа от сервера
+    errorMsg = 'Сервер не отвечает'
+  } else {
+    // Ошибка при настройке запроса
+    errorMsg = error.message
+  }
+  
+  // Для всплывающей ошибки показываем текст без HTML
+  errorMessage.value = errorMsg.replace(/<[^>]*>/g, '')
+  
+  // В терминал добавляем с HTML
+  addTerminalLine(`Connection error: ${errorMsg}`, 'error')
+}
+
 // Создание MR
 const createMR = async () => {
   if (!isBranchNameValid.value || isLoading.value) return
@@ -192,43 +267,10 @@ const createMR = async () => {
   addTerminalLine(`create-mr --source-branch=${branchName.value} --repo=${repo}`, 'command')
 
   try {
-    const response = await fetch('/api/merge', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        source_branch: branchName.value,
-        repo: repo,
-        action: 'create'
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    console.log(data);
-    
-    if (typeof data == 'object') {
-      if (data.success === 'success') {
-        addTerminalLine(data.message, 'success')
-        branchName.value = ''
-      } else {
-        errorMessage.value = data.data.message
-        addTerminalLine(`Error: ${data.data.message}`, 'error')
-      }
-    } else {
-      errorMessage.value = 'Неверный формат ответа от сервера'
-      addTerminalLine('Invalid server response format', 'error')
-    } 
-
+    const response = await mergenatorApi.createMR(branchName.value, repo)
+    handleApiResponse(response)
   } catch (error) {
-    console.error('Ошибка при создании MR:', error)
-    errorMessage.value = `Ошибка соединения: ${error.message}`
-    addTerminalLine(`Connection error: ${error.message}`, 'error')
+    handleApiError(error)
   } finally {
     isLoading.value = false
   }
@@ -236,12 +278,44 @@ const createMR = async () => {
 
 // Удаление CI ветки
 const deleteCIBranch = async () => {
-  addTerminalLine(`Эта кнопка пока в разработке...`, 'system')
+  if (!isBranchNameValid.value || isLoading.value) return
+
+  isLoading.value = true
+  clearError()
+
+  const repo = activeTab.value === 'frontend' ? 'frontend' : 'backend'
+  
+  addTerminalLine(`delete-ci-branch --branch=${branchName.value} --repo=${repo}`, 'command')
+
+  try {
+    const response = await mergenatorApi.deleteCIBranch(branchName.value, repo)
+    handleApiResponse(response)
+  } catch (error) {
+    handleApiError(error)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // Закрытие MR
 const closeMR = async () => {
-  addTerminalLine(`Эта кнопка пока в разработке...`, 'system')
+  if (!isBranchNameValid.value || isLoading.value) return
+
+  isLoading.value = true
+  clearError()
+
+  const repo = activeTab.value === 'frontend' ? 'frontend' : 'backend'
+  
+  addTerminalLine(`close-mr --source-branch=${branchName.value} --repo=${repo}`, 'command')
+
+  try {
+    const response = await mergenatorApi.closeMR(branchName.value, repo)
+    handleApiResponse(response)
+  } catch (error) {
+    handleApiError(error)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // Установка активной вкладки и обновление URL
@@ -287,7 +361,7 @@ onMounted(() => {
     }
   }
   
-  addTerminalLine('Mergenator v1.0 initialized', 'system')
+  addTerminalLine('Mergenator v2.0 initialized (with Axios)', 'system')
   addTerminalLine('Type a branch name and click the arrow to create MR', 'system')
 })
 </script>
