@@ -1,0 +1,200 @@
+.mergenator-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Форма MR */
+.mr-form {
+  position: relative;
+}
+
+.input-wrapper {
+  background-color: #1e1f22;
+  border: 1px solid #41474a;
+  border-radius: 6px;
+  padding: 2px;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.input-wrapper:focus-within {
+  border-color: #589df6;
+  box-shadow: 0 0 0 2px rgba(88, 157, 246, 0.2);
+}
+
+.input-wrapper.error {
+  border-color: #f28b82;
+}
+
+.input-wrapper input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px 14px;
+  color: #a9b7c6;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  margin: 0;
+  max-width: none;
+}
+
+.input-wrapper input::placeholder {
+  color: #5f6a70;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.input-wrapper input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Кнопки действий */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  background-color: #313335;
+  color: #a9b7c6;
+  border: 1px solid #464a4d;
+}
+
+.btn-action:hover:not(:disabled) {
+  background-color: #404448;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-action:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-action svg {
+  stroke: currentColor;
+}
+
+.btn-primary {
+  background-color: #2f6a9f;
+  color: white;
+  border-color: #2f6a9f;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #3a7ab5;
+  border-color: #3a7ab5;
+}
+
+.btn-warning {
+  background-color: #b45f1b;
+  color: white;
+  border-color: #b45f1b;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #c46f2b;
+  border-color: #c46f2b;
+}
+
+.btn-danger {
+  background-color: #b71c1c;
+  color: white;
+  border-color: #b71c1c;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c72c2c;
+  border-color: #c72c2c;
+}
+
+/* Всплывающая ошибка */
+.error-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: #5a1e1e;
+  border: 1px solid #b71c1c;
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: #f28b82;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.2s ease;
+}
+
+.error-icon {
+  font-size: 14px;
+}
+
+/* Анимации */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+  .btn-action {
+    width: 100%;
+  }
+}

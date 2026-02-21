@@ -134,51 +134,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fake-tabs {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #404448;
-  padding-bottom: 0;
-}
 
-.fake-tab {
-  background-color: #313335;
-  color: #8f9aa3;
-  padding: 6px 16px;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  font-size: 12px;
-  border: 1px solid #404448;
-  border-bottom: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.fake-tab.active-tab {
-  background-color: #2b2b2b;
-  color: #bbbbbb;
-  border-bottom: 2px solid #589df6;
-  margin-bottom: -1px;
-}
-
-.fake-tab:hover:not(.active-tab) {
-  background-color: #404448;
-  color: #ffffff;
-}
-
-.tag {
-  color: #6a8759;
-}
-
-.url-info {
-  margin-top: 20px;
-  padding: 8px;
-  background-color: #1e1f22;
-  border-radius: 4px;
-  color: #6897bb;
-  font-family: monospace;
-  font-size: 11px;
-  border: 1px solid #41474a;
-}
 </style>
