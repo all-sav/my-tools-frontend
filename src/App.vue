@@ -31,31 +31,65 @@
           </router-view>
         </div>
 
-        <!-- Терминал -->
-        <TerminalPanel 
-          ref="terminalPanel"
-          @close="handleTerminalClose"
-        />
-      </div>
+        <!-- Терминал (над статус-баром) -->
+        <transition name="slide-up">
+          <TerminalPanel 
+            v-if="terminalVisible"
+            ref="terminalPanel"
+            @close="closeTerminal"
+          />
+        </transition>
 
-      <div class="status-bar">
-        <div class="status-bar-left">
-          <span>🔒 HTTPS</span> • 
-          <span>UTF-8</span> • 
-          <span>Unix (LF)</span>
-        </div>
-        <div class="status-bar-center">
-          <span class="route-info">{{ $route.path }}</span>
-        </div>
-        <div class="status-bar-right">
-          <span>👤 {{ gitlabUsername }}</span>
-          <div class="status-separator">•</div>
-          <button v-if="!terminalVisible" @click="showTerminal" class="show-terminal-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 17L8 21L4 25" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/>
-            </svg>
-            Show Terminal
-          </button>
+        <!-- Статус-бар с кнопкой терминала -->
+        <div class="status-bar">
+          <div class="status-bar-left">
+            <!-- Кнопка терминала со стрелочкой -->
+            <button 
+              class="terminal-tab" 
+              :class="{ active: terminalExpanded }"
+              @click="toggleTerminal"
+            >
+              <svg 
+                width="14" 
+                height="14" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                :class="{ rotated: terminalExpanded }"
+              >
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>TERMINAL</span>
+            </button>
+
+            <span class="separator">•</span>
+            <span>🔒 HTTPS</span>
+            <span class="separator">•</span>
+            <span>UTF-8</span>
+            <span class="separator">•</span>
+            <span>Unix (LF)</span>
+          </div>
+
+          <div class="status-bar-center">
+            <span class="route-info">{{ $route.path }}</span>
+          </div>
+
+          <div class="status-bar-right">
+            <!-- Статус WebSocket -->
+            <div class="ws-status" :class="wsStatusClass">
+              <span class="ws-dot"></span>
+              <span class="ws-text">WS: {{ wsStatusText }}</span>
+            </div>
+
+            <span class="separator">•</span>
+            <span>👤 {{ gitlabUsername }}</span>
+            
+            <button @click="logout" class="logout-btn" title="Logout">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 16L21 12M21 12L17 8M21 12H7M13 16V17C13 19.2091 11.2091 21 9 21H6C3.79086 21 2 19.2091 2 17V7C2 4.79086 3.79086 3 6 3H9C11.2091 3 13 4.79086 13 7V8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -80,7 +114,35 @@ const isAuthenticated = ref(false)
 const gitlabUsername = ref('')
 const gitlabUserId = ref(null)
 
-const terminalVisible = computed(() => terminalPanel.value?.isVisible ?? true)
+const terminalExpanded = ref(false)
+const terminalVisible = computed(() => terminalExpanded.value)
+
+// Статус WebSocket
+const wsStatusText = computed(() => {
+  const status = websocket.status
+  return {
+    'OPEN': 'ONLINE',
+    'connected': 'ONLINE',
+    'connecting': 'SYNC',
+    'CONNECTING': 'SYNC',
+    'disconnected': 'OFF',
+    'CLOSED': 'OFF',
+    'error': 'ERR'
+  }[status] || 'OFF'
+})
+
+const wsStatusClass = computed(() => {
+  const status = websocket.status
+  return {
+    'OPEN': 'online',
+    'connected': 'online',
+    'connecting': 'connecting',
+    'CONNECTING': 'connecting',
+    'disconnected': 'offline',
+    'CLOSED': 'offline',
+    'error': 'error'
+  }[status] || 'offline'
+})
 
 onMounted(() => {
   checkAuth()
@@ -110,18 +172,14 @@ const handleLoginSuccess = (userData) => {
 
 const logout = () => {
   websocket.disconnect()
-  
   localStorage.removeItem('auth_token')
   localStorage.removeItem('gitlab_username')
   localStorage.removeItem('gitlab_user_id')
-  
   document.cookie = 'gitlab_user_id=; path=/; max-age=0; secure; samesite=strict'
   document.cookie = 'gitlab_username=; path=/; max-age=0; secure; samesite=strict'
-  
   isAuthenticated.value = false
   gitlabUsername.value = ''
   gitlabUserId.value = null
-  
   router.push('/')
 }
 
@@ -130,274 +188,18 @@ const menuItems = [
   { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator' }
 ]
 
-const isActiveMenuItem = (item) => {
-  return route.path.startsWith(item.basePath)
-}
-
+const isActiveMenuItem = (item) => route.path.startsWith(item.basePath)
 const navigateTo = (item) => {
-  if (route.path.startsWith(item.basePath)) {
-    return
-  }
+  if (route.path.startsWith(item.basePath)) return
   router.push(item.basePath)
 }
 
-const handleTerminalClose = () => {}
+// Управление терминалом
+const toggleTerminal = () => {
+  terminalExpanded.value = !terminalExpanded.value
+}
 
-const showTerminal = () => {
-  if (terminalPanel.value) {
-    terminalPanel.value.show()
-  }
+const closeTerminal = () => {
+  terminalExpanded.value = false
 }
 </script>
-
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 13px;
-  background-color: #2b2b2b;
-  height: 100vh;
-  line-height: 1.5;
-  color: #a9b7c6;
-  overflow: hidden;
-}
-
-.app {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-.sidebar {
-  width: 300px;
-  background-color: #3c3f41;
-  border-right: 1px solid #1e1f22;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  flex-shrink: 0;
-  box-shadow: inset -2px 0 0 #2a2b2e;
-}
-
-.sidebar-header {
-  padding: 12px 12px 6px 18px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7a8b99;
-  border-bottom: 1px solid #323436;
-  margin-bottom: 8px;
-}
-
-.menu {
-  list-style: none;
-  padding: 4px 0;
-}
-
-.menu-item {
-  padding: 6px 12px 6px 28px;
-  margin: 2px 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  color: #b7b7b7;
-  transition: background-color 0.15s, color 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-left: 2px solid transparent;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-}
-
-.menu-item::before {
-  content: "📄";
-  font-size: 14px;
-  opacity: 0.8;
-  filter: grayscale(30%);
-  width: 18px;
-  display: inline-block;
-  margin-right: 8px;
-}
-
-.menu-item[data-key="dashboard"]::before {
-  content: "📊";
-}
-
-.menu-item[data-key="mergenator"]::before {
-  content: "🔄";
-}
-
-.menu-item:hover {
-  background-color: #4b4f52;
-  color: #eeeeee;
-}
-
-.menu-item.active {
-  background-color: #2f6a9f;
-  color: white;
-  border-left: 2px solid #589df6;
-}
-
-.menu-item.active::before {
-  opacity: 1;
-  filter: none;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 12px 8px;
-  border-top: 1px solid #2b2b2b;
-  font-size: 11px;
-  color: #6a7a84;
-  margin-left: 8px;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.content-panel {
-  flex: 1;
-  background-color: #2b2b2b;
-  overflow-y: auto;
-  padding: 18px 22px;
-  color: #a9b7c6;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.content-panel::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-.content-panel::-webkit-scrollbar-track {
-  background: #313335;
-  border-radius: 4px;
-}
-
-.content-panel::-webkit-scrollbar-thumb {
-  background: #4f5a5f;
-  border-radius: 4px;
-  border: 2px solid #313335;
-}
-
-.content-panel::-webkit-scrollbar-thumb:hover {
-  background: #5f6a70;
-}
-
-.status-bar {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 300px;
-  background-color: #3f4345;
-  color: #a0a9b1;
-  font-size: 11px;
-  padding: 2px 16px;
-  border-top: 1px solid #1e1f22;
-  z-index: 200;
-  box-shadow: -1px -1px 0 #2b2b2b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 24px;
-}
-
-.status-bar-left,
-.status-bar-center,
-.status-bar-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-bar-center {
-  color: #6897bb;
-  font-family: monospace;
-}
-
-.status-separator {
-  color: #5f6a70;
-  margin: 0 2px;
-}
-
-.route-info {
-  color: #6897bb;
-  font-family: monospace;
-}
-
-.logout-btn {
-  background: none;
-  border: 1px solid #f44336;
-  color: #f44336;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 4px;
-}
-
-.logout-btn:hover {
-  background: #f44336;
-  color: white;
-}
-
-.show-terminal-btn {
-  background: none;
-  border: 1px solid #589df6;
-  color: #589df6;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s ease;
-}
-
-.show-terminal-btn:hover {
-  background: #589df6;
-  color: white;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 200px;
-  }
-  
-  .status-bar {
-    left: 200px;
-  }
-  
-  .status-bar-center {
-    display: none;
-  }
-}
-</style>

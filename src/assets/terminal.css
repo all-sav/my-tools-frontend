@@ -1,64 +1,62 @@
 /* Базовые стили терминала */
 .terminal-panel {
-  background-color: #1e1f22;
-  border-top: 1px solid #404448;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 100;
-}
-
-.terminal-panel.collapsed {
-  height: 36px;
-  overflow: hidden;
+  height: 300px;
+  background-color: #0a0c0e;
+  border-top: 1px solid #00ff9d;
+  border-bottom: 1px solid #00ff9d;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -5px 20px rgba(0, 255, 157, 0.2);
+  /* Убрали анимацию terminalGlow */
 }
 
 /* Заголовок терминала */
-.terminal-panel-header {
-  height: 36px;
-  background-color: #313335;
-  border-bottom: 1px solid #404448;
+.terminal-header {
+  height: 32px;
+  background: linear-gradient(90deg, #1a1e24 0%, #0a0c0e 100%);
+  border-bottom: 1px solid #00ff9d;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0 12px;
-  cursor: pointer;
-  user-select: none;
-  font-family: 'JetBrains Mono', monospace;
+  position: relative;
+  overflow: hidden;
 }
 
-.terminal-panel-header:hover {
-  background-color: #3a3d40;
+.terminal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00ff9d, #00ff9d, transparent);
+  animation: scanline 4s linear infinite;
 }
 
-.header-left {
+@keyframes scanline {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.terminal-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.collapse-btn {
-  background: none;
-  border: none;
-  color: #00ff9d;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+.terminal-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #5f6a70;
+  transition: all 0.3s ease;
 }
 
-.collapse-btn:hover {
-  color: #ffffff;
-  transform: scale(1.1);
-}
-
-.collapse-btn svg {
-  transition: transform 0.3s ease;
-}
-
-.collapse-btn svg.rotated {
-  transform: rotate(180deg);
+.terminal-led.active {
+  background-color: #00ff9d;
+  box-shadow: 0 0 8px #00ff9d;
+  /* Убрали анимацию ledPulse */
 }
 
 .terminal-title {
@@ -66,69 +64,26 @@
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  /* Убрали text-shadow */
 }
 
-.terminal-badge {
-  background-color: #00ff9d;
-  color: #0a0c0e;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 12px;
-  min-width: 20px;
-  text-align: center;
-}
+/* Убрали .terminal-badge */
 
-.header-right {
+.terminal-header-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Статус WebSocket в заголовке */
-.ws-status-compact {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  background-color: #1e1f22;
-  border-radius: 4px;
-  font-size: 10px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.ws-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.ws-status-compact.online .ws-dot {
-  background-color: #00ff9d;
-}
-
-.ws-status-compact.connecting .ws-dot {
-  background-color: #ff00ff;
-  animation: pulse 1s infinite;
-}
-
-.ws-status-compact.offline .ws-dot {
-  background-color: #f28b82;
-}
-
-.ws-status-compact.error .ws-dot {
-  background-color: #ff00ff;
-  animation: pulse 0.5s infinite;
-}
-
-.ws-text {
+.terminal-status {
   color: #8f9aa3;
   font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  opacity: 0.8;
 }
 
-/* Кнопки в заголовке */
-.header-btn {
+.terminal-clear-btn {
   background: none;
   border: none;
   color: #8f9aa3;
@@ -137,28 +92,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
-.header-btn:hover {
-  color: #00ff9d;
-  transform: scale(1.1);
+.terminal-clear-btn:hover {
+  color: #f28b82;
+  background-color: rgba(242, 139, 130, 0.1);
+}
+
+.terminal-clear-btn svg {
+  stroke: currentColor;
 }
 
 /* Контент терминала */
-.terminal-panel-content {
-  height: 250px;
-  overflow: hidden;
-}
-
-.terminal {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background-color: #0a0c0e;
-}
-
 .terminal-content {
   flex: 1;
   padding: 12px;
@@ -171,7 +118,6 @@
   scrollbar-color: #00ff9d #1e1f22;
 }
 
-/* Стилизация скролла */
 .terminal-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -192,36 +138,35 @@
 /* Строки терминала */
 .terminal-line {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   color: #a9b7c6;
   margin-bottom: 2px;
   white-space: pre-wrap;
   word-break: break-word;
   padding: 2px 0;
   transition: background-color 0.15s ease;
-  font-family: 'JetBrains Mono', monospace;
+  border-left: 2px solid transparent;
+  animation: slideIn 0.2s ease;
 }
 
 .terminal-line:hover {
   background-color: rgba(0, 255, 157, 0.05);
+  border-left-color: #00ff9d;
 }
 
-/* Промпт (значок в начале строки) */
 .terminal-prompt {
   color: #00ff9d;
   user-select: none;
   min-width: 20px;
-  font-weight: normal;
   text-align: center;
+  font-weight: 500;
 }
 
-/* Текст сообщения */
 .terminal-text {
   flex: 1;
   color: #a9b7c6;
 }
 
-/* Время */
 .terminal-details {
   color: #6a8759;
   font-size: 11px;
@@ -230,10 +175,11 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Типы сообщений - только цвет текста, без границ и градиентов */
+/* Типы сообщений */
 .terminal-line.header .terminal-prompt,
 .terminal-line.header .terminal-text {
   color: #00ff9d;
+  font-weight: 500;
 }
 
 .terminal-line.error .terminal-prompt,
@@ -255,6 +201,7 @@
 .terminal-line.command .terminal-prompt,
 .terminal-line.command .terminal-text {
   color: #ff00ff;
+  font-weight: 500;
 }
 
 .terminal-line.default .terminal-prompt {
@@ -294,40 +241,21 @@
 }
 
 /* Анимации */
-@keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-2px);
+    transform: translateX(-5px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
-}
-
-.terminal-line {
-  animation: slideIn 0.2s ease;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  .terminal-panel-content {
-    height: 150px;
+  .terminal-panel {
+    height: 200px;
   }
   
   .terminal-content {
@@ -340,10 +268,14 @@
   }
   
   .terminal-line {
-    gap: 2px;
+    gap: 4px;
   }
   
   .terminal-prompt {
     min-width: 16px;
+  }
+  
+  .terminal-status {
+    display: none;
   }
 }
