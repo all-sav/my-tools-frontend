@@ -343,3 +343,20 @@ label {
 .dynamic-content {
     width: 100%;
 }
+
+/* Добавим анимацию для перехода между страницами */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Стиль для информации о маршруте в статус-баре */
+.route-info {
+  color: #6897bb;
+  font-family: monospace;
+}

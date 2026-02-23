@@ -70,7 +70,7 @@
         </button>
       </div>
       
-      <!-- Блок ошибки (всплывающий под инпутом) -->
+      <!-- Блок ошибки -->
       <transition name="slide-fade">
         <div v-if="errorMessage" class="error-popup">
           <span class="error-icon">⚠️</span>
@@ -78,44 +78,22 @@
         </div>
       </transition>
     </div>
-
-    <!-- Терминал для вывода сообщений (в стиле PhpStorm) -->
-    <div class="terminal">
-      <div class="terminal-header">
-        <div class="terminal-title">
-          <span class="terminal-icon">▶</span>
-          Console Output
-        </div>
-        <div class="terminal-actions">
-          <button @click="clearTerminal" class="terminal-btn" title="Clear console">⌧</button>
-        </div>
-      </div>
-      <div class="terminal-content" ref="terminalContent">
-        <div v-for="(line, index) in terminalLines" :key="index" class="terminal-line" :class="line.type">
-          <span class="terminal-prompt">{{ line.prompt }}</span>
-          <!-- Используем v-html вместо простого вывода текста -->
-          <span class="terminal-text" v-html="line.text"></span>
-          <span v-if="line.details" class="terminal-details" v-html="line.details"></span>
-        </div>
-        <div v-if="!terminalLines.length" class="terminal-line terminal-empty">
-          <span class="terminal-prompt">$</span>
-          <span class="terminal-text">Ready to create merge requests...</span>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed, nextTick } from 'vue'
+import { ref, watch, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mergenatorApi } from '@/services/api'
+import { useTerminalStore } from '@/stores/terminal'
+import { useSystemStore } from '@/stores/system'
 
 import '@/assets/mergenator.css'
-import '@/assets/terminal.css'
 
 const route = useRoute()
 const router = useRouter()
+const terminal = useTerminalStore()
+const systemStore = useSystemStore()
 
 // Определяем props
 const props = defineProps({
@@ -136,10 +114,6 @@ const branchName = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// Терминал
-const terminalLines = ref([])
-const terminalContent = ref(null)
-
 // Список вкладок для Mergenator
 const tabs = ref([
   { name: 'Frontend', routeName: 'frontend' },
@@ -151,48 +125,24 @@ const isBranchNameValid = computed(() => {
   return branchName.value && branchName.value.length >= 3
 })
 
-// Функция для форматирования ссылок в тексте
-const formatLinks = (text) => {
-  if (!text) return text
-  
-  // Простая замена URL на кликабельные ссылки
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  return text.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" class="terminal-link">${url}</a>`
-  })
-}
-
-// Добавление строки в терминал
-const addTerminalLine = (text, type = 'info', details = null) => {
-  const prompt = type === 'error' ? '✗' : type === 'success' ? '✓' : '$'
-  
-  // НЕ делаем replace тегов, оставляем HTML как есть
-  terminalLines.value.push({
-    text: text, // убираем formatLinks, оставляем как есть
-    type,
-    prompt,
-    details,
-    timestamp: new Date().toLocaleTimeString()
-  })
-  
-  // Скролл вниз
-  nextTick(() => {
-    if (terminalContent.value) {
-      terminalContent.value.scrollTop = terminalContent.value.scrollHeight
+onMounted(() => {
+  if (route.params.tab) {
+    const tabExists = tabs.value.some(t => t.routeName === route.params.tab)
+    if (tabExists) {
+      activeTab.value = route.params.tab
     }
-  })
-}
+  } else if (props.tab) {
+    const tabExists = tabs.value.some(t => t.routeName === props.tab)
+    if (tabExists) {
+      activeTab.value = props.tab
+    }
+  }
 
-// Очистка терминала
-const clearTerminal = () => {
-  terminalLines.value = []
-  addTerminalLine('Console cleared', 'system')
-}
-
-// Очистка ошибки
-const clearError = () => {
-  errorMessage.value = ''
-}
+  if (!systemStore.isComponentActive('mergenator')) {
+    systemStore.activeComponents.mergenator = true;
+    terminal.system('Mergenator v2.0 initialized')
+  }
+})
 
 // Обработка ответа от API
 const handleApiResponse = (response) => {
@@ -200,39 +150,36 @@ const handleApiResponse = (response) => {
   
   if (response.data && typeof response.data === 'object') {
     if (response.data.success === true) {
-      addTerminalLine(response.data.message || 'Операция выполнена успешно', 'success')
+      terminal.success(response.data.message || 'Операция выполнена успешно')
       branchName.value = ''
       return true
     } else {
       let errorMsg = 'Неизвестная ошибка'
       
       if (response.data.data?.message) {
-        // Сообщение уже содержит HTML, передаем как есть
         errorMsg = response.data.data.message
       } else if (response.data.message) {
         errorMsg = response.data.message
       }
       
-      // Для всплывающей ошибки удаляем HTML, но в терминал передаем с HTML
       errorMessage.value = errorMsg.replace(/<[^>]*>/g, '')
-      addTerminalLine(`Error: ${errorMsg}`, 'error') // errorMsg содержит HTML
+      terminal.error(errorMsg)
       return false
     }
   } else {
     errorMessage.value = 'Неверный формат ответа от сервера'
-    addTerminalLine('Invalid server response format', 'error')
+    terminal.error('Invalid server response format')
     return false
   }
 }
 
-// Обработка ошибок
+// Обработка ошибок API
 const handleApiError = (error) => {
   console.error('API Error:', error)
   
   let errorMsg = 'Ошибка соединения'
   
   if (error.response) {
-    // Сервер вернул ошибку
     if (error.response.data?.data?.message) {
       errorMsg = error.response.data.data.message
     } else if (error.response.data?.message) {
@@ -241,18 +188,13 @@ const handleApiError = (error) => {
       errorMsg = `Ошибка ${error.response.status}`
     }
   } else if (error.request) {
-    // Нет ответа от сервера
     errorMsg = 'Сервер не отвечает'
   } else {
-    // Ошибка при настройке запроса
     errorMsg = error.message
   }
   
-  // Для всплывающей ошибки показываем текст без HTML
   errorMessage.value = errorMsg.replace(/<[^>]*>/g, '')
-  
-  // В терминал добавляем с HTML
-  addTerminalLine(`Connection error: ${errorMsg}`, 'error')
+  terminal.error(`Connection error: ${errorMsg}`)
 }
 
 // Создание MR
@@ -260,11 +202,11 @@ const createMR = async () => {
   if (!isBranchNameValid.value || isLoading.value) return
 
   isLoading.value = true
-  clearError()
+  errorMessage.value = ''
 
   const repo = activeTab.value === 'frontend' ? 'frontend' : 'backend'
   
-  addTerminalLine(`create-mr --source-branch=${branchName.value} --repo=${repo}`, 'command')
+  terminal.command(`create-mr --source-branch=${branchName.value} --repo=${repo}`)
 
   try {
     const response = await mergenatorApi.createMR(branchName.value, repo)
@@ -278,52 +220,19 @@ const createMR = async () => {
 
 // Удаление CI ветки
 const deleteCIBranch = async () => {
-  if (!isBranchNameValid.value || isLoading.value) return
-
-  isLoading.value = true
-  clearError()
-
-  const repo = activeTab.value === 'frontend' ? 'frontend' : 'backend'
-  
-  addTerminalLine(`delete-ci-branch --branch=${branchName.value} --repo=${repo}`, 'command')
-
-  try {
-    const response = await mergenatorApi.deleteCIBranch(branchName.value, repo)
-    handleApiResponse(response)
-  } catch (error) {
-    handleApiError(error)
-  } finally {
-    isLoading.value = false
-  }
+  terminal.system(`Эта кнопка пока в разработке...`)
 }
 
 // Закрытие MR
 const closeMR = async () => {
-  if (!isBranchNameValid.value || isLoading.value) return
-
-  isLoading.value = true
-  clearError()
-
-  const repo = activeTab.value === 'frontend' ? 'frontend' : 'backend'
-  
-  addTerminalLine(`close-mr --source-branch=${branchName.value} --repo=${repo}`, 'command')
-
-  try {
-    const response = await mergenatorApi.closeMR(branchName.value, repo)
-    handleApiResponse(response)
-  } catch (error) {
-    handleApiError(error)
-  } finally {
-    isLoading.value = false
-  }
+  terminal.system(`Эта кнопка пока в разработке...`)
 }
 
-// Установка активной вкладки и обновление URL
+// Установка активной вкладки
 const setActiveTab = (tab) => {
   activeTab.value = tab.routeName
-  
-  clearError()
-  addTerminalLine(`Switched to ${tab.name} repository`, 'system')
+  errorMessage.value = ''
+  terminal.system(`Switched to ${tab.name} repository`)
   
   router.push({
     name: 'mergenator-with-tab',
@@ -337,7 +246,7 @@ watch(() => route.params.tab, (newTab) => {
     const tabExists = tabs.value.some(t => t.routeName === newTab)
     if (tabExists) {
       activeTab.value = newTab
-      clearError()
+      errorMessage.value = ''
     } else {
       router.replace({
         name: 'mergenator-with-tab',
@@ -346,22 +255,49 @@ watch(() => route.params.tab, (newTab) => {
     }
   }
 }, { immediate: true })
-
-// При монтировании проверяем параметр из URL
-onMounted(() => {
-  if (route.params.tab) {
-    const tabExists = tabs.value.some(t => t.routeName === route.params.tab)
-    if (tabExists) {
-      activeTab.value = route.params.tab
-    }
-  } else if (props.tab) {
-    const tabExists = tabs.value.some(t => t.routeName === props.tab)
-    if (tabExists) {
-      activeTab.value = props.tab
-    }
-  }
-  
-  addTerminalLine('Mergenator v2.0 initialized (with Axios)', 'system')
-  addTerminalLine('Type a branch name and click the arrow to create MR', 'system')
-})
 </script>
+
+<style scoped>
+/* Добавляем стили для статуса WebSocket */
+.ws-status {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #1e1f22;
+}
+
+.ws-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ws-connected .ws-indicator {
+  background-color: #4caf50;
+  box-shadow: 0 0 5px #4caf50;
+}
+
+.ws-connecting .ws-indicator {
+  background-color: #ffc107;
+  animation: pulse 1s infinite;
+}
+
+.ws-disconnected .ws-indicator {
+  background-color: #f44336;
+}
+
+.ws-error .ws-indicator {
+  background-color: #ff9800;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+</style>

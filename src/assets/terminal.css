@@ -1,58 +1,162 @@
-.terminal {
-  flex: 1;
+/* Базовые стили терминала */
+.terminal-panel {
   background-color: #1e1f22;
-  border: 1px solid #404448;
-  border-radius: 6px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
-  margin-top: 16px;
+  border-top: 1px solid #404448;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 100;
 }
 
-.terminal-header {
+.terminal-panel.collapsed {
+  height: 36px;
+  overflow: hidden;
+}
+
+/* Заголовок терминала */
+.terminal-panel-header {
+  height: 36px;
   background-color: #313335;
-  padding: 8px 12px;
+  border-bottom: 1px solid #404448;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #404448;
+  padding: 0 12px;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.terminal-title {
-  color: #8f9aa3;
-  font-size: 12px;
-  font-weight: 500;
+.terminal-panel-header:hover {
+  background-color: #3a3d40;
+}
+
+.header-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.terminal-icon {
-  color: #6897bb;
-  font-size: 12px;
-  padding-bottom: 2px;
-}
-
-.terminal-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.terminal-btn {
+.collapse-btn {
   background: none;
   border: none;
-  color: #8f9aa3;
-  font-size: 14px;
+  color: #00ff9d;
   cursor: pointer;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
 
-.terminal-btn:hover {
-  background-color: #404448;
+.collapse-btn:hover {
   color: #ffffff;
+  transform: scale(1.1);
+}
+
+.collapse-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.collapse-btn svg.rotated {
+  transform: rotate(180deg);
+}
+
+.terminal-title {
+  color: #00ff9d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.terminal-badge {
+  background-color: #00ff9d;
+  color: #0a0c0e;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Статус WebSocket в заголовке */
+.ws-status-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background-color: #1e1f22;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.ws-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.ws-status-compact.online .ws-dot {
+  background-color: #00ff9d;
+}
+
+.ws-status-compact.connecting .ws-dot {
+  background-color: #ff00ff;
+  animation: pulse 1s infinite;
+}
+
+.ws-status-compact.offline .ws-dot {
+  background-color: #f28b82;
+}
+
+.ws-status-compact.error .ws-dot {
+  background-color: #ff00ff;
+  animation: pulse 0.5s infinite;
+}
+
+.ws-text {
+  color: #8f9aa3;
+  font-size: 10px;
+}
+
+/* Кнопки в заголовке */
+.header-btn {
+  background: none;
+  border: none;
+  color: #8f9aa3;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+  color: #00ff9d;
+  transform: scale(1.1);
+}
+
+/* Контент терминала */
+.terminal-panel-content {
+  height: 250px;
+  overflow: hidden;
+}
+
+.terminal {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0c0e;
 }
 
 .terminal-content {
@@ -62,11 +166,12 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   line-height: 1.6;
-  background-color: #1e1f22;
+  background-color: #0a0c0e;
   scrollbar-width: thin;
-  scrollbar-color: #4f5a5f #1e1f22;
+  scrollbar-color: #00ff9d #1e1f22;
 }
 
+/* Стилизация скролла */
 .terminal-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -76,87 +181,169 @@
 }
 
 .terminal-content::-webkit-scrollbar-thumb {
-  background: #4f5a5f;
+  background: #00ff9d;
   border-radius: 4px;
 }
 
 .terminal-content::-webkit-scrollbar-thumb:hover {
-  background: #5f6a70;
+  background: #00cc7a;
 }
 
+/* Строки терминала */
 .terminal-line {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   color: #a9b7c6;
   margin-bottom: 2px;
   white-space: pre-wrap;
   word-break: break-word;
+  padding: 2px 0;
+  transition: background-color 0.15s ease;
+  font-family: 'JetBrains Mono', monospace;
 }
 
+.terminal-line:hover {
+  background-color: rgba(0, 255, 157, 0.05);
+}
+
+/* Промпт (значок в начале строки) */
 .terminal-prompt {
-  color: #6897bb;
+  color: #00ff9d;
   user-select: none;
   min-width: 20px;
+  font-weight: normal;
+  text-align: center;
 }
 
+/* Текст сообщения */
 .terminal-text {
   flex: 1;
+  color: #a9b7c6;
 }
 
+/* Время */
 .terminal-details {
   color: #6a8759;
   font-size: 11px;
   margin-left: 8px;
+  opacity: 0.7;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.terminal-line.error {
+/* Типы сообщений - только цвет текста, без границ и градиентов */
+.terminal-line.header .terminal-prompt,
+.terminal-line.header .terminal-text {
+  color: #00ff9d;
+}
+
+.terminal-line.error .terminal-prompt,
+.terminal-line.error .terminal-text {
   color: #f28b82;
 }
 
-.terminal-line.error .terminal-prompt {
-  color: #f28b82;
-}
-
-.terminal-line.success {
+.terminal-line.success .terminal-prompt,
+.terminal-line.success .terminal-text {
   color: #81c995;
 }
 
-.terminal-line.success .terminal-prompt {
-  color: #81c995;
-}
-
-.terminal-line.system {
+.terminal-line.system .terminal-prompt,
+.terminal-line.system .terminal-text {
   color: #8f9aa3;
   font-style: italic;
 }
 
-.terminal-line.command {
-  color: #cb7d4a;
+.terminal-line.command .terminal-prompt,
+.terminal-line.command .terminal-text {
+  color: #ff00ff;
 }
 
-.terminal-line.command .terminal-prompt {
-  color: #cb7d4a;
+.terminal-line.default .terminal-prompt {
+  color: #00ff9d;
 }
 
+.terminal-line.default .terminal-text {
+  color: #a9b7c6;
+}
+
+/* Пустой терминал */
 .terminal-empty {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
+.terminal-empty .terminal-prompt {
+  color: #8f9aa3;
+}
+
+.terminal-empty .terminal-text {
+  color: #8f9aa3;
+  font-style: italic;
+}
+
+/* Ссылки в терминале */
 .terminal-link,
 .terminal-line a {
-  color: #589df6;
+  color: #00ff9d;
   text-decoration: none;
-  border-bottom: 1px dashed #589df6;
+  border-bottom: 1px dashed #00ff9d;
   transition: all 0.2s ease;
 }
 
 .terminal-line a:hover {
-  color: #74b9ff;
-  border-bottom-style: solid;
+  color: #ffffff;
+  border-bottom-color: #ffffff;
 }
 
+/* Анимации */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.terminal-line {
+  animation: slideIn 0.2s ease;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
+  .terminal-panel-content {
+    height: 150px;
+  }
+  
   .terminal-content {
-    max-height: 200px;
+    font-size: 11px;
+    padding: 8px;
+  }
+  
+  .terminal-details {
+    font-size: 10px;
+  }
+  
+  .terminal-line {
+    gap: 2px;
+  }
+  
+  .terminal-prompt {
+    min-width: 16px;
   }
 }

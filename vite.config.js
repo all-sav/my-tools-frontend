@@ -19,7 +19,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false, // игнорируем самоподписанные сертификаты
         rewrite: (path) => path.replace(/^\/api/, ''),
-        // Для отладки (можно убрать в продакшене)
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.log('proxy error', err);

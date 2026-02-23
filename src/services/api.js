@@ -2,22 +2,27 @@ import axios from 'axios';
 
 // Создаем экземпляр axios с базовыми настройками
 const apiClient = axios.create({
-  baseURL: '/api', // используем прокси
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // для отправки кук
+  withCredentials: true,
 });
 
-// Интерцептор для запросов (можно добавить токены, логирование и т.д.)
+// Интерцептор для добавления токена к каждому запросу
 apiClient.interceptors.request.use(
   (config) => {
-    // Можно добавить токен авторизации
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Пропускаем запросы к логину
+    if (config.url === '/auth/login') {
+      return config;
+    }
+    
+    // Добавляем токен из localStorage
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Punk ${token}`;
+    }
     
     console.log('📤 Request:', config.method.toUpperCase(), config.url, config.data);
     return config;
@@ -28,48 +33,45 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Интерцептор для ответов
+// Интерцептор для обработки ошибок 401 (неавторизован)
 apiClient.interceptors.response.use(
-  (response) => {
-    console.log('📥 Response:', response.status, response.data);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response) {
-      // Сервер ответил с ошибкой
-      console.error('❌ Response Error:', error.response.status, error.response.data);
-      
-      // Можно обработать разные статусы
-      switch (error.response.status) {
-        case 401:
-          console.log('Не авторизован');
-          // редирект на логин
-          break;
-        case 403:
-          console.log('Доступ запрещен');
-          break;
-        case 404:
-          console.log('Ресурс не найден');
-          break;
-        case 500:
-          console.log('Внутренняя ошибка сервера');
-          break;
+    if (error.response?.status === 401) {
+      // Проверяем, что это не запрос на логин
+      if (error.config.url !== '/auth/login') {
+        // Токен истек или недействителен
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('gitlab_username');
+        localStorage.removeItem('gitlab_user_id');
+        
+        // Перенаправляем на страницу логина только если это не запрос логина
+        window.location.href = '/';
       }
-    } else if (error.request) {
-      // Запрос был отправлен, но нет ответа
-      console.error('❌ No response from server:', error.request);
-    } else {
-      // Ошибка при настройке запроса
-      console.error('❌ Request setup error:', error.message);
     }
-    
     return Promise.reject(error);
   }
 );
 
+// API методы для аутентификации
+export const authApi = {
+  login: (username, password, gitlabUser, wsClientId) => 
+    apiClient.post('/auth/login', {
+      username,
+      password,
+      gitlab_user: gitlabUser,
+      ws_client_id: wsClientId
+    }),
+  
+  logout: () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('gitlab_username');
+    localStorage.removeItem('gitlab_user_id');
+  }
+};
+
 // API методы для Mergenator
 export const mergenatorApi = {
-  // Создание MR
   createMR: (sourceBranch, repo) => 
     apiClient.post('/merge', {
       source_branch: sourceBranch,
@@ -77,24 +79,17 @@ export const mergenatorApi = {
       action: 'create'
     }),
   
-  // Удаление CI ветки
   deleteCIBranch: (branch, repo) => 
     apiClient.post('/delete-ci-branch', {
       branch: branch,
       repo: repo
     }),
   
-  // Закрытие MR
   closeMR: (sourceBranch, repo) => 
     apiClient.post('/close-mr', {
       source_branch: sourceBranch,
       repo: repo
     }),
-};
-
-// Можно добавить другие API
-export const dashboardApi = {
-  getData: () => apiClient.get('/dashboard-data'),
 };
 
 export default apiClient;
