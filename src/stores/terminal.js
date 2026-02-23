@@ -35,6 +35,10 @@ export const useTerminalStore = defineStore('terminal', {
         this.messages.shift()
       }
     },
+
+    toggleTerminal() {
+      this.isExpanded = !this.isExpanded
+    },
     
     // Очистка терминала
     clearMessages() {

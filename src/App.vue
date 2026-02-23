@@ -44,7 +44,7 @@
             <button 
               class="terminal-tab" 
               :class="{ active: terminalExpanded }"
-              @click="toggleTerminal"
+              @click="terminal.toggleTerminal"
             >
               <svg 
                 width="14" 
@@ -107,7 +107,6 @@ const websocket = useWebSocketStore()
 const terminal = useTerminalStore()
 const route = useRoute()
 const router = useRouter()
-const terminalPanel = ref(null)
 
 const isAuthenticated = ref(false)
 const gitlabUsername = ref('')
@@ -201,11 +200,6 @@ const isActiveMenuItem = (item) => route.path.startsWith(item.basePath)
 const navigateTo = (item) => {
   if (route.path.startsWith(item.basePath)) return
   router.push(item.basePath)
-}
-
-// Управление терминалом
-const toggleTerminal = () => {
-  terminal.isExpanded = !terminal.isExpanded
 }
 
 const closeTerminal = () => {
