@@ -138,6 +138,8 @@ onMounted(() => {
     }
   }
 
+  terminal.isExpanded = true;
+
   if (!systemStore.isComponentActive('mergenator')) {
     systemStore.activeComponents.mergenator = true;
     terminal.system('Mergenator v2.0 initialized')

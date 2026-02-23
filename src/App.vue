@@ -58,20 +58,19 @@
               </svg>
               <span>TERMINAL</span>
             </button>
+            
+            <span class="route-info">{{ $route.path }}</span>
+          </div>
 
-            <span class="separator">•</span>
+          <div class="status-bar-center"></div>
+
+          <div class="status-bar-right">
             <span>🔒 HTTPS</span>
             <span class="separator">•</span>
             <span>UTF-8</span>
             <span class="separator">•</span>
             <span>Unix (LF)</span>
-          </div>
-
-          <div class="status-bar-center">
-            <span class="route-info">{{ $route.path }}</span>
-          </div>
-
-          <div class="status-bar-right">
+            <span class="separator">•</span>
             <div class="ws-status" :class="wsStatusClass">
               <span class="ws-dot"></span>
               <span class="ws-text">WS: {{ wsStatusText }}</span>
@@ -99,6 +98,7 @@ import Login from '@/components/Login.vue'
 import TerminalPanel from '@/components/TerminalPanel.vue'
 import { useWebSocketStore } from '@/stores/websocket'
 import { useTerminalStore } from '@/stores/terminal'
+import { authApi } from '@/services/api'
 
 import IconDashboard from '@/components/icons/IconDashboard.vue'
 import IconMerge from '@/components/icons/IconMerge.vue'
@@ -113,7 +113,7 @@ const isAuthenticated = ref(false)
 const gitlabUsername = ref('')
 const gitlabUserId = ref(null)
 
-const terminalExpanded = ref(true)
+const terminalExpanded = computed(() => terminal.isExpanded)
 const terminalVisible = computed(() => terminalExpanded.value)
 
 // Статус WebSocket
@@ -169,18 +169,28 @@ const handleLoginSuccess = (userData) => {
   gitlabUserId.value = userData.userId
 }
 
-const logout = () => {
-  websocket.disconnect()
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('gitlab_username')
-  localStorage.removeItem('gitlab_user_id')
-  document.cookie = 'gitlab_user_id=; path=/; max-age=0; secure; samesite=strict'
-  document.cookie = 'gitlab_username=; path=/; max-age=0; secure; samesite=strict'
-  isAuthenticated.value = false
-  gitlabUsername.value = ''
-  gitlabUserId.value = null
-  router.push('/')
-}
+const logout = async () => {
+  try {
+    // Отправляем запрос на бэкенд для инвалидации токена
+    await authApi.logout();
+  } catch (error) {
+    console.error('Logout API error:', error);
+    // Даже если ошибка, продолжаем локальную очистку
+  } finally {
+    // Отключаем WebSocket
+    websocket.disconnect();
+    
+    authApi.clearLocalSession()
+    
+    // Сбрасываем состояние
+    isAuthenticated.value = false;
+    gitlabUsername.value = '';
+    gitlabUserId.value = null;
+    
+    // Редирект на главную
+    router.push('/');
+  }
+};
 
 const menuItems = [
   { key: 'dashboard', label: 'Dashboard', basePath: '/dashboard', icon: IconDashboard },
@@ -195,10 +205,10 @@ const navigateTo = (item) => {
 
 // Управление терминалом
 const toggleTerminal = () => {
-  terminalExpanded.value = !terminalExpanded.value
+  terminal.isExpanded = !terminal.isExpanded
 }
 
 const closeTerminal = () => {
-  terminalExpanded.value = false
+  terminal.isExpanded = false
 }
 </script>

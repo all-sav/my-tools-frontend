@@ -63,7 +63,9 @@ export const authApi = {
       ws_client_id: wsClientId
     }),
   
-  logout: () => {
+  logout: () => apiClient.post('/auth/logout'),
+  
+  clearLocalSession: () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('gitlab_username');
     localStorage.removeItem('gitlab_user_id');

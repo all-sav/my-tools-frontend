@@ -4,6 +4,7 @@ export const useTerminalStore = defineStore('terminal', {
   state: () => ({
     messages: [],
     maxMessages: 1000, // Лимит сообщений
+    isExpanded: false,
   }),
   
   getters: {
