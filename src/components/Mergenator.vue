@@ -150,8 +150,11 @@ const handleApiResponse = (response) => {
   
   if (response.data && typeof response.data === 'object') {
     if (response.data.success === true) {
-      terminal.success(response.data.message || 'Операция выполнена успешно')
-      branchName.value = ''
+      if (response.data.data?.mrUrl) {
+        terminal.success("Merge Request успешно создан:\n<a href=\""+response.data.data.mrUrl+"\" target=\"_blank\">"+response.data.data.mrUrl+"</a>")
+      } else {
+        terminal.success(response.data.data?.message || 'Операция выполнена успешно')
+      }
       return true
     } else {
       let errorMsg = 'Неизвестная ошибка'

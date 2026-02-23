@@ -113,7 +113,7 @@ const isAuthenticated = ref(false)
 const gitlabUsername = ref('')
 const gitlabUserId = ref(null)
 
-const terminalExpanded = ref(false)
+const terminalExpanded = ref(true)
 const terminalVisible = computed(() => terminalExpanded.value)
 
 // Статус WebSocket
