@@ -24,90 +24,107 @@ body {
 /* Левый столбец */
 .sidebar {
   width: 300px;
-  background-color: #3c3f41;
-  border-right: 1px solid #1e1f22;
+  background-color: #2b2b2b; /* чуть темнее для контраста */
+  border-right: 1px solid #00ff9d; /* неоновая линия */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   flex-shrink: 0;
-  box-shadow: inset -2px 0 0 #2a2b2e;
+  box-shadow: inset -2px 0 0 #1e1f22; /* оставим лёгкую тень */
 }
 
 .sidebar-header {
-  padding: 12px 12px 6px 18px;
-  font-size: 11px;
+  padding: 20px 16px 12px 20px;
+  font-size: 16px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7a8b99;
-  border-bottom: 1px solid #323436;
-  margin-bottom: 8px;
+  letter-spacing: 2px;
+  color: #00ff9d;
+  border-bottom: 1px solid #00ff9d;
+  /* margin-bottom: 16px; */
+  text-shadow: 0 0 5px rgba(0, 255, 157, 0.3);
+}
+
+.logo {
+  display: inline-block;
 }
 
 .menu {
   list-style: none;
-  padding: 4px 0;
+  padding: 0;
+  width: 100%;
 }
 
 .menu-item {
-  padding: 6px 12px 6px 28px;
-  margin: 2px 6px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 0;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   color: #b7b7b7;
-  transition: background-color 0.15s, color 0.15s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-left: 2px solid transparent;
+  gap: 12px;
+  border-left: 3px solid transparent;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  position: relative;
-}
-
-.menu-item::before {
-  font-size: 14px;
-  opacity: 0.8;
-  filter: grayscale(30%);
-  width: 18px;
-  display: inline-block;
-  margin-right: 8px;
-}
-
-.menu-item[data-key="dashboard"]::before {
-  content: "📊";
-}
-
-.menu-item[data-key="mergenator"]::before {
-  content: "🔄";
+  background: transparent;
+  width: 100%;
 }
 
 .menu-item:hover {
-  background-color: #4b4f52;
-  color: #eeeeee;
+  background-color: rgba(0, 255, 157, 0.1);
+  color: #ffffff;
+  border-left-color: #00ff9d;
 }
 
 .menu-item.active {
-  background-color: #2f6a9f;
-  color: white;
-  border-left: 2px solid #589df6;
+  background: linear-gradient(90deg, rgba(0, 255, 157, 0.15) 0%, transparent 100%);
+  color: #00ff9d;
+  border-left-color: #00ff9d;
+  font-weight: 500;
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
 }
 
-.menu-item.active::before {
-  opacity: 1;
-  filter: none;
+.menu-item svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  transition: transform 0.2s ease;
 }
 
-.sidebar-footer {
+.menu-item:hover svg {
+  transform: scale(1.1);
+}
+
+.menu-item.active svg {
+  stroke: #00ff9d;
+  filter: drop-shadow(0 0 5px #00ff9d);
+}
+
+/* Удаляем псевдоэлементы с иконками, так как теперь используем SVG */
+.menu-item::before {
+  display: none;
+}
+
+/* Можно добавить разделитель между группами меню, если появятся */
+.menu-divider {
+  height: 1px;
+  background: linear-gradient(90deg, #00ff9d, transparent);
+  margin: 12px 16px;
+  opacity: 0.3;
+}
+
+/* .sidebar-footer {
   margin-top: auto;
   padding: 12px 8px;
   border-top: 1px solid #2b2b2b;
   font-size: 11px;
   color: #6a7a84;
   margin-left: 8px;
-}
+} */
 
 .main-content {
   flex: 1;
@@ -190,7 +207,7 @@ body {
 .status-bar {
   height: 32px;
   background-color: #1e1f22;
-  border-top: 1px solid #00ff9d;
+  /* border-top: 1px solid #00ff9d; */
   color: #a0a9b1;
   font-size: 11px;
   padding: 0 16px;

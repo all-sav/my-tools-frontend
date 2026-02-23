@@ -3,23 +3,21 @@
     <Login v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
     <template v-else>
       <div class="sidebar">
-        <div class="sidebar-header">📌 PRIMARY MENUS</div>
+        <div class="sidebar-header">
+          <span class="logo">⚡ MyTools</span>
+        </div>
         <ul class="menu">
           <li
             v-for="item in menuItems"
             :key="item.key"
             class="menu-item"
             :class="{ active: isActiveMenuItem(item) }"
-            :data-key="item.key"
             @click="navigateTo(item)"
           >
-            {{ item.label }}
+            <component :is="item.icon" />
+            <span>{{ item.label }}</span>
           </li>
         </ul>
-        <div class="sidebar-footer">
-          <span>👤 {{ gitlabUsername }}</span> • 
-          <button @click="logout" class="logout-btn">ВЫХОД</button>
-        </div>
       </div>
 
       <div class="main-content">
@@ -31,7 +29,7 @@
           </router-view>
         </div>
 
-        <!-- Терминал (над статус-баром) -->
+        <!-- Терминал -->
         <transition name="slide-up">
           <TerminalPanel 
             v-if="terminalVisible"
@@ -40,10 +38,9 @@
           />
         </transition>
 
-        <!-- Статус-бар с кнопкой терминала -->
+        <!-- Статус-бар -->
         <div class="status-bar">
           <div class="status-bar-left">
-            <!-- Кнопка терминала со стрелочкой -->
             <button 
               class="terminal-tab" 
               :class="{ active: terminalExpanded }"
@@ -75,7 +72,6 @@
           </div>
 
           <div class="status-bar-right">
-            <!-- Статус WebSocket -->
             <div class="ws-status" :class="wsStatusClass">
               <span class="ws-dot"></span>
               <span class="ws-text">WS: {{ wsStatusText }}</span>
@@ -103,6 +99,9 @@ import Login from '@/components/Login.vue'
 import TerminalPanel from '@/components/TerminalPanel.vue'
 import { useWebSocketStore } from '@/stores/websocket'
 import { useTerminalStore } from '@/stores/terminal'
+
+import IconDashboard from '@/components/icons/IconDashboard.vue'
+import IconMerge from '@/components/icons/IconMerge.vue'
 
 const websocket = useWebSocketStore()
 const terminal = useTerminalStore()
@@ -184,8 +183,8 @@ const logout = () => {
 }
 
 const menuItems = [
-  { key: 'dashboard', label: 'Dashboard', basePath: '/dashboard' },
-  { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator' }
+  { key: 'dashboard', label: 'Dashboard', basePath: '/dashboard', icon: IconDashboard },
+  { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator', icon: IconMerge }
 ]
 
 const isActiveMenuItem = (item) => route.path.startsWith(item.basePath)
