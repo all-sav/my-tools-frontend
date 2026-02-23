@@ -31,6 +31,7 @@ body {
   overflow-y: auto;
   flex-shrink: 0;
   box-shadow: inset -2px 0 0 #1e1f22; /* оставим лёгкую тень */
+  background: linear-gradient(180deg, #2b2b2b 0%, #1e1f22 100%);
 }
 
 .sidebar-header {
@@ -117,14 +118,62 @@ body {
   opacity: 0.3;
 }
 
-/* .sidebar-footer {
+/* Футер сайдбара с логотипом компании */
+.sidebar-footer {
   margin-top: auto;
-  padding: 12px 8px;
-  border-top: 1px solid #2b2b2b;
-  font-size: 11px;
-  color: #6a7a84;
-  margin-left: 8px;
-} */
+  padding: 16px 12px 20px;
+  border-top: 1px solid #3d6857;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.company-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.logo-accent {
+  color: #ff00ff;
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px #ff00ff);
+  animation: pulse 2s infinite;
+}
+
+.logo-text {
+  color: #00ff9d;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px rgba(0, 255, 157, 0.5);
+}
+
+.logo-year {
+  color: #8f9aa3;
+  font-size: 10px;
+  margin-left: auto;
+  opacity: 0.7;
+}
+
+.company-tagline {
+  color: #8f9aa3;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border-left: 2px solid #ff00ff;
+  padding-left: 8px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* Анимация для молнии */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
 
 .main-content {
   flex: 1;

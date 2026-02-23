@@ -18,6 +18,14 @@
             <span>{{ item.label }}</span>
           </li>
         </ul>
+        <div class="sidebar-footer">
+          <div class="company-logo">
+            <span class="logo-accent">⚡</span>
+            <span class="logo-text">ANDAGAR</span>
+            <span class="logo-year">© 2026</span>
+          </div>
+          <div class="company-tagline">web development</div>
+        </div>
       </div>
 
       <div class="main-content">
