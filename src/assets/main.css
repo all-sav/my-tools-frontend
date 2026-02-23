@@ -21,7 +21,7 @@ body {
     overflow: hidden;
 }
 
-/* Левый столбец — 300px, темный фон панели инструментов */
+/* Левый столбец */
 .sidebar {
     width: 300px;
     background-color: #3c3f41;
@@ -33,7 +33,6 @@ body {
     box-shadow: inset -2px 0 0 #2a2b2e;
 }
 
-/* Заголовок области меню */
 .sidebar-header {
     padding: 12px 12px 6px 18px;
     font-size: 11px;
@@ -45,7 +44,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Стилизация меню */
 .menu {
     list-style: none;
     padding: 4px 0;
@@ -69,9 +67,7 @@ body {
     position: relative;
 }
 
-/* Базовая иконка по умолчанию */
 .menu-item::before {
-    content: "📄";
     font-size: 14px;
     opacity: 0.8;
     filter: grayscale(30%);
@@ -80,58 +76,12 @@ body {
     margin-right: 8px;
 }
 
-/* Иконки для разных типов меню */
 .menu-item[data-key="dashboard"]::before {
-    content: "📊"; /* Дашборд/статистика */
+    content: "📊";
 }
 
 .menu-item[data-key="mergenator"]::before {
-    content: "🔄"; /* Слияние/объединение */
-}
-
-.menu-item[data-key="welcome"]::before {
-    content: "🏠"; /* Домой */
-}
-
-.menu-item[data-key="project"]::before {
-    content: "📁"; /* Проект/папка */
-}
-
-.menu-item[data-key="structure"]::before {
-    content: "🌳"; /* Дерево/структура */
-}
-
-.menu-item[data-key="database"]::before {
-    content: "🗄️"; /* База данных */
-}
-
-.menu-item[data-key="settings"]::before {
-    content: "⚙️"; /* Настройки */
-}
-
-.menu-item[data-key="terminal"]::before {
-    content: ">_"; /* Терминал */
-    font-weight: bold;
-}
-
-.menu-item[data-key="commit"]::before {
-    content: "🔁"; /* Коммит/Git */
-}
-
-.menu-item[data-key="users"]::before {
-    content: "👥"; /* Пользователи */
-}
-
-.menu-item[data-key="analytics"]::before {
-    content: "📈"; /* Аналитика */
-}
-
-.menu-item[data-key="reports"]::before {
-    content: "📋"; /* Отчеты */
-}
-
-.menu-item[data-key="tasks"]::before {
-    content: "✓"; /* Задачи */
+    content: "🔄";
 }
 
 .menu-item:hover {
@@ -150,7 +100,6 @@ body {
     filter: none;
 }
 
-/* Футер сайдбара */
 .sidebar-footer {
     margin-top: auto;
     padding: 12px 8px;
@@ -160,7 +109,13 @@ body {
     margin-left: 8px;
 }
 
-/* Правый столбец (контент) */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .content-panel {
     flex: 1;
     background-color: #2b2b2b;
@@ -170,29 +125,28 @@ body {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 13px;
     line-height: 1.6;
-    scrollbar-width: thin;
-    scrollbar-color: #4f5a5f #2b2b2b;
 }
 
-/* Стилизация скролла под Webkit */
 .content-panel::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
+
 .content-panel::-webkit-scrollbar-track {
     background: #313335;
     border-radius: 4px;
 }
+
 .content-panel::-webkit-scrollbar-thumb {
     background: #4f5a5f;
     border-radius: 4px;
     border: 2px solid #313335;
 }
+
 .content-panel::-webkit-scrollbar-thumb:hover {
     background: #5f6a70;
 }
 
-/* Оформление контента */
 .content-panel h2 {
     color: #ffc66d;
     font-weight: 500;
@@ -232,131 +186,141 @@ body {
     color: #6a8759;
 }
 
-/* плашка статуса */
+/* Статус бар */
 .status-bar {
     position: fixed;
     bottom: 0;
     right: 0;
+    left: 300px;
     background-color: #3f4345;
     color: #a0a9b1;
     font-size: 11px;
     padding: 2px 16px;
-    border-top-left-radius: 6px;
-    border: 1px solid #1e1f22;
-    border-right: none;
-    border-bottom: none;
-    z-index: 10;
+    border-top: 1px solid #1e1f22;
+    z-index: 200;
     box-shadow: -1px -1px 0 #2b2b2b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 24px;
 }
 
-.tag {
-  color: #6a8759;
+.status-bar-left,
+.status-bar-center,
+.status-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.demo-content {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #1e1f22;
-  border-radius: 8px;
-  border: 1px solid #41474a;
+.status-bar-center {
+    color: #6897bb;
+    font-family: monospace;
 }
 
-/* select, input[type="text"] {
-  background-color: #313335;
-  color: #a9b7c6;
-  border: 1px solid #464a4d;
-  padding: 5px 10px;
-  border-radius: 4px;
-  margin-top: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  width: 100%;
-  max-width: 300px;
-} */
-
-select:focus, input:focus {
-  outline: none;
-  border-color: #589df6;
+.status-separator {
+    color: #5f6a70;
+    margin: 0 2px;
 }
 
-input[type="checkbox"] {
-  margin-right: 8px;
-  accent-color: #589df6;
+.route-info {
+    color: #6897bb;
+    font-family: monospace;
 }
 
-label {
-  display: block;
-  margin: 8px 0;
-  color: #a9b7c6;
-  cursor: pointer;
+.logout-btn {
+    background: none;
+    border: 1px solid #f44336;
+    color: #f44336;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 4px;
 }
 
-.mt-2 {
-  margin-top: 10px;
+.logout-btn:hover {
+    background: #f44336;
+    color: white;
 }
 
+.show-terminal-btn {
+    background: none;
+    border: 1px solid #589df6;
+    color: #589df6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.show-terminal-btn:hover {
+    background: #589df6;
+    color: white;
+}
+
+/* Табы */
 .fake-tabs {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #404448;
-  padding-bottom: 0;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #404448;
+    padding-bottom: 0;
+    flex-wrap: wrap;
 }
 
 .fake-tab {
-  background-color: #313335;
-  color: #8f9aa3;
-  padding: 6px 16px;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  font-size: 12px;
-  border: 1px solid #404448;
-  border-bottom: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
+    background-color: #313335;
+    color: #8f9aa3;
+    padding: 6px 16px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-size: 12px;
+    border: 1px solid #404448;
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .fake-tab.active-tab {
-  background-color: #2b2b2b;
-  color: #bbbbbb;
-  border-bottom: 2px solid #589df6;
-  margin-bottom: -1px;
+    background-color: #2b2b2b;
+    color: #bbbbbb;
+    border-bottom: 2px solid #589df6;
+    margin-bottom: -1px;
 }
 
 .fake-tab:hover:not(.active-tab) {
-  background-color: #404448;
-  color: #ffffff;
+    background-color: #404448;
+    color: #ffffff;
 }
 
-.url-info {
-  margin-top: 20px;
-  padding: 8px;
-  background-color: #1e1f22;
-  border-radius: 4px;
-  color: #6897bb;
-  font-family: monospace;
-  font-size: 11px;
-  border: 1px solid #41474a;
-}
-
-/* Контейнер для динамического контента */
-.dynamic-content {
-    width: 100%;
-}
-
-/* Добавим анимацию для перехода между страницами */
+/* Анимации */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
 
-/* Стиль для информации о маршруте в статус-баре */
-.route-info {
-  color: #6897bb;
-  font-family: monospace;
+/* Адаптивность */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .status-bar {
+        left: 200px;
+    }
+    
+    .status-bar-center {
+        display: none;
+    }
 }
