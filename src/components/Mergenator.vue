@@ -146,6 +146,10 @@ onMounted(() => {
   }
 })
 
+onUnmounted(() => {
+  terminal.isExpanded = false;
+})
+
 // Обработка ответа от API
 const handleApiResponse = (response) => {
   console.log('API Response:', response.data)

@@ -3,7 +3,7 @@
     <Login v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
     <template v-else>
       <div class="sidebar">
-        <div class="sidebar-header">
+        <div class="sidebar-header" @click="router.push('/')" style="cursor: pointer;">
           <span class="logo">⚡ MyTools</span>
         </div>
         <ul class="menu">
@@ -51,7 +51,7 @@
           <div class="status-bar-left">
             <button 
               class="terminal-tab" 
-              :class="{ active: terminalExpanded }"
+              :class="{ active: terminal.isExpanded }"
               @click="terminal.toggleTerminal"
             >
               <svg 
@@ -60,7 +60,7 @@
                 viewBox="0 0 24 24" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
-                :class="{ rotated: terminalExpanded }"
+                :class="{ rotated: terminal.isExpanded }"
               >
                 <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -79,10 +79,7 @@
             <span class="separator">•</span>
             <span>Unix (LF)</span>
             <span class="separator">•</span>
-            <div class="ws-status" :class="wsStatusClass">
-              <span class="ws-dot"></span>
-              <span class="ws-text">WS: {{ wsStatusText }}</span>
-            </div>
+            <WebSocketRadar />
 
             <span class="separator">•</span>
             <span>👤 {{ gitlabUsername }}</span>
@@ -107,6 +104,7 @@ import TerminalPanel from '@/components/TerminalPanel.vue'
 import { useWebSocketStore } from '@/stores/websocket'
 import { useTerminalStore } from '@/stores/terminal'
 import { authApi } from '@/services/api'
+import WebSocketRadar from '@/components/WebSocketRadar.vue'
 
 import IconDashboard from '@/components/icons/IconDashboard.vue'
 import IconMerge from '@/components/icons/IconMerge.vue'
@@ -120,8 +118,7 @@ const isAuthenticated = ref(false)
 const gitlabUsername = ref('')
 const gitlabUserId = ref(null)
 
-const terminalExpanded = computed(() => terminal.isExpanded)
-const terminalVisible = computed(() => terminalExpanded.value)
+const terminalVisible = computed(() => terminal.isExpanded)
 
 // Статус WebSocket
 const wsStatusText = computed(() => {

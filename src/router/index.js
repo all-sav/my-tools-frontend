@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../components/Dashboard.vue'
-import Mergenator from '../components/Mergenator.vue'
+import Dashboard from '@/components/Dashboard.vue'
+import Mergenator from '@/components/Mergenator.vue'
+import Welcome from '@/components/Welcome.vue'
 
 const routes = [
   {
@@ -10,18 +11,18 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: Dashboard,
+    component: Welcome,
     // Перенаправляем на dashboard с табом по умолчанию
-    beforeEnter: (to, from, next) => {
-      next({ name: 'dashboard-with-tab', params: { tab: 'welcome' } })
-    }
+    // beforeEnter: (to, from, next) => {
+    //   next({ name: 'dashboard-with-tab', params: { tab: 'welcome' } })
+    // }
   },
-  {
-    path: '/dashboard/:tab',
-    name: 'dashboard-with-tab',
-    component: Dashboard,
-    props: true
-  },
+  // {
+  //   path: '/dashboard/:tab',
+  //   name: 'dashboard-with-tab',
+  //   component: Dashboard,
+  //   props: true
+  // },
   {
     path: '/mergenator',
     name: 'mergenator',

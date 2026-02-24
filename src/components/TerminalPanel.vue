@@ -1,11 +1,9 @@
 <template>
   <div class="terminal-panel">
-    <!-- Заголовок терминала -->
     <div class="terminal-header">
       <div class="terminal-header-left">
         <div class="terminal-led" :class="{ active: terminal.messageCount > 0 }"></div>
         <span class="terminal-title">TERMINAL</span>
-        <!-- Убрали badge -->
       </div>
       
       <div class="terminal-header-right">

@@ -337,26 +337,7 @@ body {
 }
 
 /* Статус WebSocket в статус-баре */
-.ws-status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  background-color: #2b2b2b;
-  border-radius: 4px;
-  font-size: 10px;
-}
 
-.ws-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.ws-status.online .ws-dot {
-  background-color: #00ff9d;
-  box-shadow: 0 0 8px #00ff9d;
-}
 
 .ws-status.connecting .ws-dot {
   background-color: #ff00ff;
