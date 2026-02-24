@@ -13,12 +13,17 @@
       </div>
     </div>
 
-    <!-- Заголовок в зависимости от таба -->
-    <h2>{{ activeTab === 'frontend' ? '🖥️ Frontend Merger' : '⚙️ Backend Merger' }}</h2>
+    <h2>
+      <component :is="activeTab === 'frontend' ? IconFrontend : IconBackend" />
+      {{ activeTab === 'frontend' ? 'Frontend Merger' : 'Backend Merger' }}
+    </h2>
     
     <!-- Форма создания MR -->
     <div class="mr-form">
-      <div class="input-wrapper" :class="{ 'error': !isBranchNameValid && branchName }">
+      <div class="input-wrapper" :class="{
+        'error': apiError,
+        'warn': branchName && !isBranchNameValid
+      }">
         <input 
           type="text" 
           v-model="branchName"
@@ -26,6 +31,12 @@
           :disabled="isLoading"
           @keyup.enter="createMR"
         />
+      </div>
+
+      <!-- Подсказка о минимальной длине (только если поле непустое и невалидное) -->
+      <div class="input-hint" v-if="branchName && !isBranchNameValid">
+        <span class="hint-icon">ℹ️</span>
+        <span>Минимум 3 символа</span>
       </div>
       
       <!-- Кнопки действий -->
@@ -38,9 +49,7 @@
         >
           <span v-if="isLoading" class="spinner"></span>
           <template v-else>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4V20M12 20L18 14M12 20L6 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <IconMergeCreate />
             Create MR
           </template>
         </button>
@@ -51,9 +60,7 @@
           class="btn-action btn-warning"
           title="Удалить CI ветку"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <IconDeleteBranch />
           Delete CI branch
         </button>
         
@@ -63,9 +70,7 @@
           class="btn-action btn-danger"
           title="Закрыть MR"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <IconCloseMR />
           Close MR
         </button>
       </div>
@@ -88,12 +93,20 @@ import { mergenatorApi } from '@/services/api'
 import { useTerminalStore } from '@/stores/terminal'
 import { useSystemStore } from '@/stores/system'
 
+// Иконки
+import IconFrontend from '@/components/icons/IconFrontend.vue'
+import IconBackend from '@/components/icons/IconBackend.vue'
+import IconMergeCreate from '@/components/icons/IconMergeCreate.vue'
+import IconDeleteBranch from '@/components/icons/IconDeleteBranch.vue'
+import IconCloseMR from '@/components/icons/IconCloseMR.vue'
+
 import '@/assets/mergenator.css'
 
 const route = useRoute()
 const router = useRouter()
 const terminal = useTerminalStore()
 const systemStore = useSystemStore()
+const apiError = ref(false)
 
 // Определяем props
 const props = defineProps({
@@ -152,7 +165,7 @@ onUnmounted(() => {
 
 // Обработка ответа от API
 const handleApiResponse = (response) => {
-  console.log('API Response:', response.data)
+  apiError.value = false
   
   if (response.data && typeof response.data === 'object') {
     if (response.data.success === true) {
@@ -163,6 +176,7 @@ const handleApiResponse = (response) => {
       }
       return true
     } else {
+      apiError.value = true
       let errorMsg = 'Неизвестная ошибка'
       
       if (response.data.data?.message) {
@@ -184,7 +198,7 @@ const handleApiResponse = (response) => {
 
 // Обработка ошибок API
 const handleApiError = (error) => {
-  console.error('API Error:', error)
+  apiError.value = true
   
   let errorMsg = 'Ошибка соединения'
   
@@ -209,6 +223,7 @@ const handleApiError = (error) => {
 // Создание MR
 const createMR = async () => {
   if (!isBranchNameValid.value || isLoading.value) return
+  apiError.value = false
 
   isLoading.value = true
   errorMessage.value = ''
@@ -265,3 +280,19 @@ watch(() => route.params.tab, (newTab) => {
   }
 }, { immediate: true })
 </script>
+
+<style scoped>
+.input-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #ffc107; /* жёлтый */
+}
+
+.hint-icon {
+  font-size: 12px;
+}
+</style>

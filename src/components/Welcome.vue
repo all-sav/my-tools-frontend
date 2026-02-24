@@ -1,7 +1,7 @@
 <template>
   <div class="welcome-container">
     <div class="welcome-header">
-      <h1 class="glitch" data-text="⚡ Добро пожаловать, оператор ⚡">⚡ Добро пожаловать, {{ gitlabUsername }} ⚡</h1>
+      <h1 class="glitch" data-text="⚡ Добро пожаловать, оператор ⚡">Пользователь инициализирован: {{ gitlabUsername }}</h1>
       <p class="subtitle">Терминал управления слиянием веток и мониторинга стендов</p>
     </div>
 
