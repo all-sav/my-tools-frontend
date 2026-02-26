@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '@/components/Dashboard.vue'
 import Mergenator from '@/components/Mergenator.vue'
 import Welcome from '@/components/Welcome.vue'
+import Settings from '../components/Settings.vue'
 
 const routes = [
   {
@@ -36,7 +37,12 @@ const routes = [
     name: 'mergenator-with-tab',
     component: Mergenator,
     props: true
-  }
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: Settings
+  },
 ]
 
 const router = createRouter({

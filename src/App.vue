@@ -108,6 +108,7 @@ import WebSocketRadar from '@/components/WebSocketRadar.vue'
 
 import IconDashboard from '@/components/icons/IconDashboard.vue'
 import IconMerge from '@/components/icons/IconMerge.vue'
+import IconSettings from '@/components/icons/IconSettings.vue'
 
 const websocket = useWebSocketStore()
 const terminal = useTerminalStore()
@@ -198,7 +199,8 @@ const logout = async () => {
 
 const menuItems = [
   { key: 'dashboard', label: 'Dashboard', basePath: '/dashboard', icon: IconDashboard },
-  { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator', icon: IconMerge }
+  { key: 'mergenator', label: 'Mergenator', basePath: '/mergenator', icon: IconMerge },
+  { key: 'settings', label: 'Settings', basePath: '/settings', icon: IconSettings },
 ]
 
 const isActiveMenuItem = (item) => route.path.startsWith(item.basePath)
