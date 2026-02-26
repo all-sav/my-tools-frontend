@@ -1,5 +1,68 @@
-# Vue 3 + Vite
+# MyTools
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+> - **Бэкенд**: [my-tools-backend](https://github.com/all-sav/my-tools-backend)
+> - **Фронтенд**: [my-tools-frontend](https://github.com/all-sav/my-tools-frontend)
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+---
+
+## Система мониторинга и управления стендом
+
+Front: vue3 + vite
+Back: go
+
+![Дашборд](dashboard.png)
+
+### Мерженатор
+
+Модуль для создания MR в инстансе gitlab используя API. 
+Для специфических задач - когда надо выкладывать на стенд какую-то ветку но с какими-то дополнениями.
+
+В веб-морде указываете ветку(которую предварительно запушили в репозиторий), дальше приложение само создаёт новую ветку от указанной,
+мержит в неё ветку с дополнениями и создаёт MR в целевую ветку(например, в ветку на которой работает какой-нибудь сервер).
+
+В гитлабе также можно настроить вебхук на адрес https://this-app-url/webhook/on-push чтобы он срабатывал на push в репозиторий.
+Данное приложение отработает событие, автоматом подмержит изменения в ветку с дополнениями(созданную при создании MR). 
+
+![Мерженатор](mergenator.png)
+
+#### Конфиг nginx для прокси
+```
+server {
+    listen 443 ssl;
+    server_name my-domain.com;
+
+    ssl_certificate /path-to-certs/fullchain.pem;
+    ssl_certificate_key /path-to-certs/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive" always;
+
+    location / {
+        proxy_pass http://localhost:8085;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+# Веб-сокет
+server {
+    listen 8076 ssl;
+    server_name my-domain.com;
+
+    ssl_certificate /path-to-certs/fullchain.pem;
+    ssl_certificate_key /path-to-certs/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location /ws {
+        proxy_pass http://localhost:8086;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}
+```
