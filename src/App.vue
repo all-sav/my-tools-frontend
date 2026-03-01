@@ -172,6 +172,9 @@ const handleLoginSuccess = (userData) => {
   isAuthenticated.value = true
   gitlabUsername.value = userData.username
   gitlabUserId.value = userData.userId
+  if (!websocket.isConnected) {
+    websocket.connect(parseInt(userData.userId))
+  }
 }
 
 const logout = async () => {
@@ -180,19 +183,15 @@ const logout = async () => {
     await authApi.logout();
   } catch (error) {
     console.error('Logout API error:', error);
-    // Даже если ошибка, продолжаем локальную очистку
   } finally {
-    // Отключаем WebSocket
     websocket.disconnect();
     
     authApi.clearLocalSession()
     
-    // Сбрасываем состояние
     isAuthenticated.value = false;
     gitlabUsername.value = '';
     gitlabUserId.value = null;
     
-    // Редирект на главную
     router.push('/');
   }
 };

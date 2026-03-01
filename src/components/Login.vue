@@ -137,7 +137,6 @@ const handleLogin = async () => {
     console.log('Login response:', response.data)
 
     if (response.data.success) {
-      // Сохраняем токен в localStorage
       localStorage.setItem('auth_token', response.data.data.token)
       localStorage.setItem('gitlab_username', gitlabUser.value)
       localStorage.setItem('gitlab_user_id', response.data.data.gitlab_user_id)
