@@ -121,30 +121,64 @@
 import { ref, onMounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { debounce } from 'lodash-es'
+import { settingsApi } from '@/services/api'
+import { convertKeysToCamel, convertKeysToSnake } from '@/utils/caseConverter'
 
 const settings = useSettingsStore()
 const saveStatus = ref('')
+const isLoading = ref(true)
 
 // Загружаем настройки при монтировании
 onMounted(() => {
-  settings.loadFromStorage()
+  loadFromRemote()
 })
 
-// Дебаунс для сохранения (чтобы не сохранять при каждом символе)
-const debouncedSave = debounce(() => {
+const loadFromRemote = async () => {
+  isLoading.value = true
+  try {
+    const response = await settingsApi.getByModule("mergenator") // todo: Нужно загружать все настройки(но пока у нас жеж только один модуль)
+    if (response.data.success) {
+      settings.updateFromObject(convertKeysToCamel(response.data.data))
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error)
+    settings.loadFromStorage()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const saveToRemote = async () => {
   saveStatus.value = 'saving'
   try {
-    settings.saveToStorage()
+    const data = convertKeysToSnake({
+      backend_project_id: settings.backendProjectId,
+      frontend_project_id: settings.frontendProjectId,
+      backend_stand_branch: settings.backendStandBranch,
+      frontend_stand_branch: settings.frontendStandBranch,
+      ci_main_branch: settings.ciMainBranch,
+      required_prefix: settings.requiredPrefix,
+      prefix: settings.prefix,
+      ci_prefix: settings.ciPrefix
+    })
+    await settingsApi.save("mergenator", data)
     saveStatus.value = 'saved'
+    settings.saveToStorage()
     setTimeout(() => {
       if (saveStatus.value === 'saved') saveStatus.value = ''
     }, 2000)
-  } catch (e) {
+  } catch (error) {
+    console.error('Failed to save settings:', error)
     saveStatus.value = 'error'
     setTimeout(() => {
       if (saveStatus.value === 'error') saveStatus.value = ''
     }, 2000)
   }
+}
+
+// Дебаунс для сохранения (чтобы не сохранять при каждом символе)
+const debouncedSave = debounce(async () => {
+  await saveToRemote()
 }, 500)
 
 const resetToDefaults = () => {

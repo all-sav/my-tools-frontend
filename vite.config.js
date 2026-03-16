@@ -17,7 +17,7 @@ export default defineConfig({
       '/api': {
         target: 'https://localhost:8085',
         changeOrigin: true,
-        secure: false, // игнорируем самоподписанные сертификаты
+        secure: false, // игнорировать самоподписанные сертификаты
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {

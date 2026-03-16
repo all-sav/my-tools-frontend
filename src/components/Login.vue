@@ -132,7 +132,6 @@ const handleLogin = async () => {
       username.value,
       password.value,
       gitlabUser.value,
-      null // Убираем websocket.clientId
     )
 
     console.log('Login response:', response.data)

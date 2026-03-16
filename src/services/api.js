@@ -60,7 +60,6 @@ export const authApi = {
       username,
       password,
       gitlab_user: gitlabUser,
-      ws_client_id: wsClientId
     }),
   
   logout: () => apiClient.post('/auth/logout'),
@@ -78,20 +77,32 @@ export const mergenatorApi = {
     apiClient.post('/merge', {
       source_branch: sourceBranch,
       repo: repo,
-      action: 'create'
+      action: 'create',
     }),
   
   deleteCIBranch: (branch, repo) => 
     apiClient.post('/delete-ci-branch', {
       branch: branch,
-      repo: repo
+      repo: repo,
     }),
   
   closeMR: (sourceBranch, repo) => 
     apiClient.post('/close-mr', {
       source_branch: sourceBranch,
-      repo: repo
+      repo: repo,
     }),
 };
+
+// API настроек
+export const settingsApi = {
+  getByModule: (module) =>
+    apiClient.get('/settings', {params: {module: module}}),
+
+  save: (module, data) => 
+    apiClient.post('/settings', {
+      module: module,
+      data: data,
+    })
+}
 
 export default apiClient;
