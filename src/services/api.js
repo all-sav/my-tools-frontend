@@ -105,4 +105,9 @@ export const settingsApi = {
     })
 }
 
+// API методы для статистики
+export const statsApi = {
+  getStats: () => apiClient.get('/stats')
+}
+
 export default apiClient;

@@ -24,7 +24,7 @@ export const useWebSocketStore = defineStore('websocket', {
       
       const terminal = useTerminalStore()
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const wsUrl = `${protocol}//localhost:8085/ws`
+      const wsUrl = `${protocol}//${window.location.host}/ws`
       
       console.log('🔌 Connecting WebSocket for user:', userId)
       

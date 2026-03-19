@@ -30,6 +30,15 @@ export default defineConfig({
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
           });
         }
+      },
+
+      // Прокси для WebSocket
+      '/ws': {
+        target: 'https://localhost:8085',
+        changeOrigin: true,
+        secure: false, // игнорировать самоподписанные сертификаты
+        ws: true,
+        rewrite: (path) => path
       }
     }
   },
