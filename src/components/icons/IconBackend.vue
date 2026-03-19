@@ -6,88 +6,25 @@
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <!-- Server -->
-    <rect
-      x="4"
-      y="5"
-      width="16"
-      height="14"
-      rx="2"
-      stroke="currentColor"
-      stroke-width="1.5"
-    />
-    <!-- Lights / ports -->
-    <circle cx="8" cy="9" r="1.4" fill="currentColor" />
-    <circle cx="8" cy="14" r="1.4" fill="currentColor" />
-    <path
-      d="M11 9H16"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M11 14H16"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
+    <!-- Core chip -->
+    <rect x="6.3" y="6.3" width="11.4" height="11.4" rx="2.1" stroke="currentColor" stroke-width="1.4" />
+    <rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.2" stroke="currentColor" stroke-width="1.3" />
 
-    <!-- Gear (inside server) -->
-    <circle
-      cx="15"
-      cy="12"
-      r="2.1"
-      stroke="currentColor"
-      stroke-width="1.5"
-      opacity="0.95"
-    />
-    <path
-      d="M15 6.6V8"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M18.2 8.2L17.2 9.2"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M19.4 11.9H18"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M18.2 15.6L17.2 14.6"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M15 16.0V17.4"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M11.8 15.6L12.8 14.6"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M10.6 11.9H12.0"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      d="M11.8 8.2L12.8 9.2"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
+    <!-- Pins -->
+    <path d="M8.5 4.3V6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M12 4.3V6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M15.5 4.3V6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M8.5 17.7V19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M12 17.7V19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M15.5 17.7V19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M4.3 8.5H6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M4.3 12H6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M4.3 15.5H6.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M17.7 8.5H19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M17.7 12H19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <path d="M17.7 15.5H19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+
+    <!-- Neon pulse -->
+    <circle cx="12" cy="12" r="1.1" fill="currentColor" opacity="0.85" />
   </svg>
 </template>

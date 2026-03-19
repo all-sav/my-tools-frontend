@@ -23,26 +23,38 @@
           <div class="stat-value">{{ stats.mrCreated }}</div>
           <div class="stat-label">открытых MR</div>
           <div class="stat-detail" v-if="stats.mrByRepo">
-            <span class="repo-badge" v-if="stats.mrByRepo.frontend">🖥️ {{ stats.mrByRepo.frontend }}</span>
-            <span class="repo-badge" v-if="stats.mrByRepo.backend">⚙️ {{ stats.mrByRepo.backend }}</span>
+            <span class="repo-badge" v-if="stats.mrByRepo.frontend">
+              <IconFrontend /> {{ stats.mrByRepo.frontend }}
+            </span>
+            <span class="repo-badge" v-if="stats.mrByRepo.backend">
+              <IconBackend /> {{ stats.mrByRepo.backend }}
+            </span>
           </div>
         </div>
       </div>
 
       <div class="stat-card" :class="{ 'has-data': stats.activeBranches > 0 }">
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon">
+          <IconBranches />
+        </div>
         <div class="stat-content">
           <div class="stat-value">{{ stats.activeBranches }}</div>
           <div class="stat-label">активных веток</div>
           <div class="stat-detail" v-if="stats.branchesByRepo">
-            <span class="repo-badge" v-if="stats.branchesByRepo.frontend">🖥️ {{ stats.branchesByRepo.frontend }}</span>
-            <span class="repo-badge" v-if="stats.branchesByRepo.backend">⚙️ {{ stats.branchesByRepo.backend }}</span>
+            <span class="repo-badge" v-if="stats.branchesByRepo.frontend">
+              <IconFrontend /> {{ stats.branchesByRepo.frontend }}
+            </span>
+            <span class="repo-badge" v-if="stats.branchesByRepo.backend">
+              <IconBackend /> {{ stats.branchesByRepo.backend }}
+            </span>
           </div>
         </div>
       </div>
 
       <div class="stat-card" :class="{ 'has-data': terminalStore.messageCount > 0 }">
-        <div class="stat-icon">💬</div>
+        <div class="stat-icon">
+          <IconTerminalMessages />
+        </div>
         <div class="stat-content">
           <div class="stat-value">{{ terminalStore.messageCount }}</div>
           <div class="stat-label">сообщений в терминале</div>
@@ -138,6 +150,8 @@ import { statsApi } from '@/services/api'
 import IconMerge from '@/components/icons/IconMerge.vue'
 import IconFrontend from '@/components/icons/IconFrontend.vue'
 import IconBackend from '@/components/icons/IconBackend.vue'
+import IconBranches from '@/components/icons/IconBranches.vue'
+import IconTerminalMessages from '@/components/icons/IconTerminalMessages.vue'
 
 const router = useRouter()
 const terminalStore = useTerminalStore()
@@ -273,8 +287,8 @@ onMounted(() => {
 }
 
 .stat-card {
-  background: #1e1f22;
-  border: 1px solid #3d6857;
+  background: radial-gradient(circle at top left, #22252b, #191a1f);
+  border: 1px solid #2f3b46;
   border-radius: 8px;
   padding: 16px;
   display: flex;
@@ -292,7 +306,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #3d6857, transparent);
+  background: linear-gradient(90deg, transparent, #00ff9d, transparent);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -321,9 +335,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2b2b2b;
+  background: radial-gradient(circle at 30% 30%, #353b45, #22252b);
   border-radius: 8px;
   color: #00ff9d;
+  box-shadow: 0 0 12px rgba(0, 255, 157, 0.15);
 }
 
 .stat-icon .status-dot {
@@ -337,6 +352,22 @@ onMounted(() => {
 .offline .stat-icon .status-dot {
   background-color: #f28b82;
   box-shadow: 0 0 10px #f28b82;
+}
+
+.stats-grid > .stat-card:nth-child(1) .stat-icon {
+  color: #00ff9d;
+}
+
+.stats-grid > .stat-card:nth-child(2) .stat-icon {
+  color: #ffc66d;
+}
+
+.stats-grid > .stat-card:nth-child(3) .stat-icon {
+  color: #7d3cff;
+}
+
+.stats-grid > .stat-card:nth-child(4) .stat-icon {
+  color: #00fff3;
 }
 
 .stat-content {
@@ -370,6 +401,9 @@ onMounted(() => {
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid #3d6857;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Быстрые действия */
