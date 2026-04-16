@@ -176,7 +176,6 @@ const loadFromRemote = async () => {
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
-    settings.loadFromStorage()
   } finally {
     isLoading.value = false
   }
@@ -200,7 +199,6 @@ const saveToRemote = async () => {
     })
     await settingsApi.save("mergenator", data)
     saveStatus.value = 'saved'
-    settings.saveToStorage()
     setTimeout(() => {
       if (saveStatus.value === 'saved') saveStatus.value = ''
     }, 2000)
@@ -235,13 +233,10 @@ const removeDockerComposePath = async (index) => {
   await saveToRemote()
 }
 
-const resetToDefaults = () => {
+const resetToDefaults = async () => {
   if (confirm('Сбросить все настройки? Это действие нельзя отменить.')) {
     settings.resetToDefaults()
-    saveStatus.value = 'saved'
-    setTimeout(() => {
-      if (saveStatus.value === 'saved') saveStatus.value = ''
-    }, 2000)
+    await saveToRemote()
   }
 }
 </script>
