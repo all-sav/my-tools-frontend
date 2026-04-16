@@ -9,7 +9,8 @@ export const useSettingsStore = defineStore('settings', {
     ciMainBranch: '',
     requiredPrefix: '',
     prefix: '',
-    ciPrefix: ''
+    ciPrefix: '',
+    dockerComposePaths: []
   }),
 
   getters: {
@@ -35,6 +36,12 @@ export const useSettingsStore = defineStore('settings', {
       this.requiredPrefix = localStorage.getItem('settings_requiredPrefix') || ''
       this.prefix = localStorage.getItem('settings_prefix') || ''
       this.ciPrefix = localStorage.getItem('settings_ciPrefix') || ''
+      try {
+        const raw = localStorage.getItem('settings_dockerComposePaths')
+        this.dockerComposePaths = raw ? JSON.parse(raw) : []
+      } catch (_e) {
+        this.dockerComposePaths = []
+      }
     },
 
     saveToStorage() {
@@ -46,6 +53,7 @@ export const useSettingsStore = defineStore('settings', {
       localStorage.setItem('settings_requiredPrefix', this.requiredPrefix)
       localStorage.setItem('settings_prefix', this.prefix)
       localStorage.setItem('settings_ciPrefix', this.ciPrefix)
+      localStorage.setItem('settings_dockerComposePaths', JSON.stringify(this.dockerComposePaths || []))
     },
 
     updateFromObject(data) {
@@ -57,6 +65,7 @@ export const useSettingsStore = defineStore('settings', {
       this.requiredPrefix = data.requiredPrefix || ''
       this.prefix = data.prefix || ''
       this.ciPrefix = data.ciPrefix || ''
+      this.dockerComposePaths = Array.isArray(data.dockerComposePaths) ? data.dockerComposePaths : []
       this.saveToStorage()
     },
 
@@ -69,6 +78,7 @@ export const useSettingsStore = defineStore('settings', {
       this.requiredPrefix = ''
       this.prefix = ''
       this.ciPrefix = ''
+      this.dockerComposePaths = []
       this.saveToStorage()
     }
   }

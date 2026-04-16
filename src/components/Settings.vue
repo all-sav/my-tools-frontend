@@ -95,6 +95,40 @@
           />
         </div>
       </div>
+
+      <p class="settings-subtitle docker-subtitle">
+        Пути к docker-compose файлам для статистики контейнеров
+      </p>
+
+      <!-- Docker compose files -->
+      <div class="settings-group docker-group">
+        <h3>Docker compose файлы</h3>
+        <p class="group-help">Необходимо указать абсолютный путь до docker-compose.yml</p>
+
+        <div
+          class="docker-path-row"
+          v-for="(path, index) in (settings.dockerComposePaths || [])"
+          :key="`docker-path-${index}`"
+        >
+          <input
+            type="text"
+            v-model="settings.dockerComposePaths[index]"
+            placeholder="/Users/you/project/docker-compose.yml"
+            @input="debouncedSave"
+          />
+          <button
+            class="remove-path-btn"
+            @click="removeDockerComposePath(index)"
+            title="Удалить путь"
+          >
+            ×
+          </button>
+        </div>
+
+        <button class="add-path-btn" @click="addDockerComposePath">
+          + Добавить файл
+        </button>
+      </div>
     </div>
 
     <!-- Индикатор сохранения -->
@@ -159,7 +193,10 @@ const saveToRemote = async () => {
       ci_main_branch: settings.ciMainBranch,
       required_prefix: settings.requiredPrefix,
       prefix: settings.prefix,
-      ci_prefix: settings.ciPrefix
+      ci_prefix: settings.ciPrefix,
+      docker_compose_paths: (settings.dockerComposePaths || [])
+        .map(path => (path || '').trim())
+        .filter(Boolean)
     })
     await settingsApi.save("mergenator", data)
     saveStatus.value = 'saved'
@@ -180,6 +217,23 @@ const saveToRemote = async () => {
 const debouncedSave = debounce(async () => {
   await saveToRemote()
 }, 500)
+
+const addDockerComposePath = async () => {
+  if (!Array.isArray(settings.dockerComposePaths)) {
+    settings.dockerComposePaths = []
+  }
+  settings.dockerComposePaths.push('')
+  await saveToRemote()
+}
+
+const removeDockerComposePath = async (index) => {
+  if (!Array.isArray(settings.dockerComposePaths)) {
+    settings.dockerComposePaths = []
+    return
+  }
+  settings.dockerComposePaths.splice(index, 1)
+  await saveToRemote()
+}
 
 const resetToDefaults = () => {
   if (confirm('Сбросить все настройки? Это действие нельзя отменить.')) {
@@ -211,7 +265,7 @@ const resetToDefaults = () => {
   color: #8f9aa3;
   font-size: 12px;
   margin-bottom: 12px;
-  margin-left: 19px;
+  margin-left: 0;
 }
 
 .settings-grid {
@@ -237,6 +291,21 @@ const resetToDefaults = () => {
   border-bottom: 1px solid #3d6857;
   padding-bottom: 8px;
   margin: 0px 0 8px 0;
+}
+
+.group-help {
+  margin: 0 0 10px 0;
+  color: #8f9aa3;
+  font-size: 11px;
+}
+
+.docker-group {
+  grid-column: span 3;
+}
+
+.docker-subtitle {
+  grid-column: span 3;
+  margin-bottom: 4px;
 }
 
 .settings-field {
@@ -273,6 +342,78 @@ const resetToDefaults = () => {
   color: #5f6a70;
   font-style: italic;
   opacity: 0.5;
+}
+
+.docker-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.docker-path-row input {
+  width: 100%;
+  background: #0a0c0e;
+  border: 1px solid #3d6857;
+  padding: 10px 12px;
+  color: #a9b7c6;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.docker-path-row input:focus {
+  outline: none;
+  border-color: #00ff9d;
+  box-shadow: 0 0 0 1px rgba(0, 255, 157, 0.3);
+}
+
+.add-path-btn,
+.remove-path-btn {
+  border: 1px solid #3d6857;
+  background: #1e1f22;
+  color: #a9b7c6;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-path-btn {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.remove-path-btn {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.add-path-btn:hover,
+.remove-path-btn:hover {
+  border-color: #00ff9d;
+  color: #00ff9d;
+}
+
+@media (max-width: 1200px) {
+  .docker-subtitle {
+    grid-column: span 2;
+  }
+
+  .docker-group {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 860px) {
+  .docker-subtitle {
+    grid-column: span 1;
+  }
+
+  .docker-group {
+    grid-column: span 1;
+  }
 }
 
 .settings-footer {

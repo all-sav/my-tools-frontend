@@ -99,6 +99,83 @@
       </div>
     </div>
 
+    <!-- Docker статистика -->
+    <div class="docker-section">
+      <div class="docker-section-header">
+        <h3>
+          <IconDocker />
+          Docker стэки
+        </h3>
+        <div class="docker-summary">
+          <div class="docker-summary-chip">
+            <span class="docker-summary-value">{{ dockerStacks.length }}</span>
+            <span class="docker-summary-label">{{ pluralize(dockerStacks.length, 'стэк', 'стэка', 'стэков') }}</span>
+          </div>
+          <div class="docker-summary-chip">
+            <span class="docker-summary-value">{{ stats.docker.runningContainers }}</span>
+            <span class="docker-summary-label">{{ pluralize(stats.docker.runningContainers, 'контейнер', 'контейнера', 'контейнеров') }}</span>
+          </div>
+          <div class="docker-summary-chip">
+            <span class="docker-summary-value">{{ longestDockerUptime }}</span>
+            <span class="docker-summary-label">макс. аптайм</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="dockerStacks.length" class="docker-grid">
+        <div
+          v-for="stack in dockerStacks"
+          :key="stack.name"
+          class="docker-stack-card"
+        >
+          <div class="docker-stack-header">
+            <div>
+              <div class="docker-stack-title">{{ stack.name }}</div>
+              <div class="docker-stack-subtitle">
+                {{ stack.containers.length }} {{ pluralize(stack.containers.length, 'контейнер', 'контейнера', 'контейнеров') }}
+              </div>
+            </div>
+            <span class="docker-stack-status">RUNNING</span>
+          </div>
+
+          <div class="docker-service-list">
+            <div
+              v-for="container in stack.containers"
+              :key="container.id"
+              class="docker-service-row"
+            >
+              <div class="docker-service-main">
+                <div class="docker-service">
+                  <span class="docker-state-dot"></span>
+                  <span>{{ container.service || container.name }}</span>
+                </div>
+                <div class="docker-container-name">{{ container.name }}</div>
+              </div>
+              <span class="docker-uptime">{{ container.uptimeHuman }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="docker-empty">
+        <div class="docker-empty-title">Активные контейнеры не найдены</div>
+        <div class="docker-empty-text">
+          Проверь сохранённые пути к `docker-compose.yml` и состояние стендов.
+        </div>
+      </div>
+
+      <div v-if="stats.docker.errors?.length" class="docker-errors">
+        <div class="docker-errors-title">Проблемы при сборе статистики</div>
+        <div
+          v-for="(error, index) in stats.docker.errors"
+          :key="index"
+          class="docker-error-item"
+        >
+          {{ error }}
+        </div>
+      </div>
+    </div>
+
     <!-- Справка по командам -->
     <div class="help-section">
       <h3>📖 Справка по Mergenator</h3>
@@ -126,7 +203,7 @@
     <div class="system-info">
       <div class="info-line">
         <span class="info-label">Версия ядра:</span>
-        <span class="info-value">Mergenator v2.0 (PhpStorm Dark)</span>
+        <span class="info-value">Mergenator v2.0 Beta</span>
       </div>
       <div class="info-line">
         <span class="info-label">Режим доступа:</span>
@@ -152,6 +229,7 @@ import IconFrontend from '@/components/icons/IconFrontend.vue'
 import IconBackend from '@/components/icons/IconBackend.vue'
 import IconBranches from '@/components/icons/IconBranches.vue'
 import IconTerminalMessages from '@/components/icons/IconTerminalMessages.vue'
+import IconDocker from '@/components/icons/IconDocker.vue'
 
 const router = useRouter()
 const terminalStore = useTerminalStore()
@@ -173,6 +251,11 @@ const stats = ref({
   branchesByRepo: {
     frontend: 0,
     backend: 0
+  },
+  docker: {
+    runningContainers: 0,
+    containers: [],
+    errors: []
   }
 })
 
@@ -190,6 +273,60 @@ const shortClientId = computed(() => {
   return websocketStore.clientId.substring(0, 8) + '…'
 })
 
+const pluralize = (count, one, few, many) => {
+  const abs = Math.abs(count) % 100
+  const last = abs % 10
+
+  if (abs > 10 && abs < 20) return many
+  if (last === 1) return one
+  if (last >= 2 && last <= 4) return few
+  return many
+}
+
+const dockerStacks = computed(() => {
+  const groups = new Map()
+  const containers = stats.value.docker?.containers || []
+
+  containers.forEach((container) => {
+    const stackName = container.stack || 'unknown'
+    if (!groups.has(stackName)) {
+      groups.set(stackName, {
+        name: stackName,
+        containers: []
+      })
+    }
+    groups.get(stackName).containers.push(container)
+  })
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      ...group,
+      containers: [...group.containers].sort((a, b) => {
+        if ((b.uptimeSeconds || 0) !== (a.uptimeSeconds || 0)) {
+          return (b.uptimeSeconds || 0) - (a.uptimeSeconds || 0)
+        }
+        return (a.service || a.name || '').localeCompare(b.service || b.name || '')
+      })
+    }))
+    .sort((a, b) => {
+      if (b.containers.length !== a.containers.length) {
+        return b.containers.length - a.containers.length
+      }
+      return a.name.localeCompare(b.name)
+    })
+})
+
+const longestDockerUptime = computed(() => {
+  const containers = stats.value.docker?.containers || []
+  if (!containers.length) return '—'
+
+  const longest = containers.reduce((max, item) => {
+    return (item.uptimeSeconds || 0) > (max.uptimeSeconds || 0) ? item : max
+  }, containers[0])
+
+  return longest?.uptimeHuman || '—'
+})
+
 // Загрузка статистики
 const loadStats = async () => {
   isLoading.value = true
@@ -198,7 +335,24 @@ const loadStats = async () => {
     if (!response.data?.success) {
       throw new Error(response.data?.data?.message || 'Failed to load stats')
     }
-    stats.value = response.data.data
+    stats.value = {
+      ...stats.value,
+      ...response.data.data,
+      mrByRepo: {
+        ...stats.value.mrByRepo,
+        ...(response.data.data?.mrByRepo || {})
+      },
+      branchesByRepo: {
+        ...stats.value.branchesByRepo,
+        ...(response.data.data?.branchesByRepo || {})
+      },
+      docker: {
+        ...stats.value.docker,
+        ...(response.data.data?.docker || {}),
+        containers: response.data.data?.docker?.containers || [],
+        errors: response.data.data?.docker?.errors || []
+      }
+    }
     lastUpdated.value = new Date().toLocaleTimeString()
   } catch (error) {
     console.error('Failed to load stats:', error)
@@ -469,6 +623,203 @@ onMounted(() => {
   margin-left: 4px;
 }
 
+/* Docker */
+.docker-section {
+  margin-bottom: 30px;
+}
+
+.docker-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.docker-section h3 {
+  color: #72d4ff;
+  font-size: 16px;
+  margin: 0;
+  border-left: 3px solid #00fff3;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.docker-section h3 :deep(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.docker-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docker-summary-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid #314452;
+  background: rgba(30, 31, 34, 0.9);
+  color: #8f9aa3;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.docker-summary-value {
+  color: #00fff3;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.docker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.docker-stack-card {
+  background: linear-gradient(180deg, rgba(35, 40, 48, 0.96), rgba(25, 26, 31, 0.96));
+  border: 1px solid #314452;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: inset 0 1px 0 rgba(114, 212, 255, 0.08);
+}
+
+.docker-stack-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.docker-stack-title {
+  color: #d8e2ea;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.docker-stack-subtitle {
+  color: #8f9aa3;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.docker-stack-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 157, 0.35);
+  background: rgba(0, 255, 157, 0.08);
+  color: #00ff9d;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+.docker-service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.docker-service-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(61, 104, 87, 0.55);
+}
+
+.docker-service-row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.docker-service-main {
+  min-width: 0;
+}
+
+.docker-service {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d8e2ea;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.docker-container-name {
+  margin-top: 4px;
+  margin-left: 16px;
+  color: #8f9aa3;
+  font-size: 11px;
+  word-break: break-word;
+}
+
+.docker-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff9d;
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.8);
+  flex-shrink: 0;
+}
+
+.docker-uptime {
+  color: #72d4ff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.docker-empty,
+.docker-errors {
+  background: #1e1f22;
+  border: 1px solid #314452;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.docker-empty-title,
+.docker-errors-title {
+  color: #d8e2ea;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.docker-empty-text {
+  color: #8f9aa3;
+  font-size: 12px;
+}
+
+.docker-errors {
+  margin-top: 12px;
+  border-color: rgba(242, 139, 130, 0.45);
+}
+
+.docker-error-item {
+  color: #f28b82;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.docker-error-item + .docker-error-item {
+  margin-top: 6px;
+}
+
 /* Справка */
 .help-section {
   margin-bottom: 30px;
@@ -545,5 +896,24 @@ onMounted(() => {
   color: #00ff9d;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .docker-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .docker-summary {
+    margin-left: 14px;
+  }
+
+  .docker-service-row {
+    flex-direction: column;
+  }
+
+  .docker-uptime {
+    margin-left: 16px;
+  }
 }
 </style>
